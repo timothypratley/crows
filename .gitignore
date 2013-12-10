@@ -1,0 +1,13 @@
+pom.xml
+*jar
+/lib
+/classes
+/bin
+/target
+.classpath
+*~
+*.swp
+*.war
+.lein*
+.nrepl*
+*.properties

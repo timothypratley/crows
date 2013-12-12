@@ -1,6 +1,18 @@
-(ns crows.stuff)
+(ns crows.stuff
+  (:require [clj-wamp.client :as client]
+            [clj-wamp.websocket :as websocket]))
 
 (defn init []
+  #_(let [on-event (fn [ws topic event] (.log js/console event))
+        on-open (fn [ws sess-id] (.log js/console sess-id))
+        on-close (fn [] (.log js/console "closed"))
+        ws (client/wamp-handler "ws://localhost:8080/ws"
+                                {:on-open  on-open
+                                 :on-close on-close
+                                 :on-event on-event})]
+    (client/subscribe! ws "event:chat")
+    (client/publish! ws "event:chat" "foo"))
+
   (let [scene (js/THREE.Scene.)
         width (.-innerWidth js/window)
         height (.-innerHeight js/window)

@@ -13,7 +13,7 @@
 
 (defroutes app-routes
   (GET "/" [] "<p>Hello World</p>")
-  (GET "/ws" [:as req] (handler req))
+  (GET "/ws" req (handler req))
   (resources "/")
   (not-found "Not Found"))
 

@@ -3,16 +3,33 @@
             [clj-wamp.websocket :as websocket]))
 
 (defn init []
-  (let [on-event (fn [ws topic event] (.log js/console event))
-        on-open (fn [ws sess-id] (.log js/console sess-id))
+  (let [on-event (fn [ws topic event] (.log js/console "EVENT " event))
+        on-open (fn [ws sess-id]
+                  (.log js/console "OPENED " sess-id)
+                  (client/subscribe! ws "http://wamptutorial/event#chat")
+                  (client/publish! ws "http://wamptutorial/event#chat" "Hi hi" "hi")
+                  (client/rpc! ws "http://wamptutorial/rpc#echo"))
         on-close (fn [] (.log js/console "closed"))
-        ws (client/wamp-handler "ws://localhost:3000/ws"
+        ws (client/wamp-handler "ws://localhost:8080/wamp"
                                 {:websocket-client websocket/client
                                  :on-open  on-open
                                  :on-close on-close
                                  :on-event on-event})]
-    (client/subscribe! ws "event:chat")
-    (client/publish! ws "event:chat" "foo"))
+    )
+  (let [conn (js/WebSocket. "ws://localhost:8080/ws")]
+    (set! (.-onopen conn)
+          (fn [e]
+            (.log js/console "connected")
+            (.send conn "hello")))
+
+    (set! (.-onerror conn)
+          (fn []
+            (js/alert "error")
+            (.log js/console js/arguments)))
+
+    (set! (.-onmessage conn)
+          (fn [e]
+            (.log js/console e))))
 
   (let [scene (js/THREE.Scene.)
         width (.-innerWidth js/window)

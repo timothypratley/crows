@@ -25486,17 +25486,17 @@ goog.require("goog.net.WebSocket.EventType");
 goog.require("goog.events");
 goog.require("goog.events");
 clj_wamp.websocket.client = function() {
-  var client__delegate = function(uri, p__24740) {
-    var vec__24743 = p__24740;
-    var map__24744 = cljs.core.nth.call(null, vec__24743, 0, null);
-    var map__24744__$1 = cljs.core.seq_QMARK_.call(null, map__24744) ? cljs.core.apply.call(null, cljs.core.hash_map, map__24744) : map__24744;
-    var next_reconnect = cljs.core.get.call(null, map__24744__$1, new cljs.core.Keyword(null, "next-reconnect", "next-reconnect", 2722179183));
-    var reconnect_QMARK_ = cljs.core.get.call(null, map__24744__$1, new cljs.core.Keyword(null, "reconnect?", "reconnect?", 1644020538), true);
-    var on_error = cljs.core.get.call(null, map__24744__$1, new cljs.core.Keyword(null, "on-error", "on-error", 1418576908));
-    var on_message = cljs.core.get.call(null, map__24744__$1, new cljs.core.Keyword(null, "on-message", "on-message", 1496225163));
-    var on_close = cljs.core.get.call(null, map__24744__$1, new cljs.core.Keyword(null, "on-close", "on-close", 1416548348));
-    var on_open = cljs.core.get.call(null, map__24744__$1, new cljs.core.Keyword(null, "on-open", "on-open", 3936747754));
-    var protocol = cljs.core.get.call(null, map__24744__$1, new cljs.core.Keyword(null, "protocol", "protocol", 4319707658));
+  var client__delegate = function(uri, p__8159) {
+    var vec__8162 = p__8159;
+    var map__8163 = cljs.core.nth.call(null, vec__8162, 0, null);
+    var map__8163__$1 = cljs.core.seq_QMARK_.call(null, map__8163) ? cljs.core.apply.call(null, cljs.core.hash_map, map__8163) : map__8163;
+    var next_reconnect = cljs.core.get.call(null, map__8163__$1, new cljs.core.Keyword(null, "next-reconnect", "next-reconnect", 2722179183));
+    var reconnect_QMARK_ = cljs.core.get.call(null, map__8163__$1, new cljs.core.Keyword(null, "reconnect?", "reconnect?", 1644020538), true);
+    var on_error = cljs.core.get.call(null, map__8163__$1, new cljs.core.Keyword(null, "on-error", "on-error", 1418576908));
+    var on_message = cljs.core.get.call(null, map__8163__$1, new cljs.core.Keyword(null, "on-message", "on-message", 1496225163));
+    var on_close = cljs.core.get.call(null, map__8163__$1, new cljs.core.Keyword(null, "on-close", "on-close", 1416548348));
+    var on_open = cljs.core.get.call(null, map__8163__$1, new cljs.core.Keyword(null, "on-open", "on-open", 3936747754));
+    var protocol = cljs.core.get.call(null, map__8163__$1, new cljs.core.Keyword(null, "protocol", "protocol", 4319707658));
     var ws = new goog.net.WebSocket(reconnect_QMARK_, next_reconnect);
     if(cljs.core.truth_(on_open)) {
       goog.events.listen(ws, goog.net.WebSocket.EventType.OPENED, function() {
@@ -25505,8 +25505,8 @@ clj_wamp.websocket.client = function() {
     }else {
     }
     if(cljs.core.truth_(on_message)) {
-      goog.events.listen(ws, goog.net.WebSocket.EventType.MESSAGE, function(p1__24739_SHARP_) {
-        return on_message.call(null, ws, p1__24739_SHARP_.message)
+      goog.events.listen(ws, goog.net.WebSocket.EventType.MESSAGE, function(p1__8158_SHARP_) {
+        return on_message.call(null, ws, p1__8158_SHARP_.message)
       })
     }else {
     }
@@ -25520,21 +25520,22 @@ clj_wamp.websocket.client = function() {
       })
     }else {
     }
+    console.log([cljs.core.str("OPEN "), cljs.core.str(uri)].join(""));
     ws.open(uri, protocol);
     return ws
   };
   var client = function(uri, var_args) {
-    var p__24740 = null;
+    var p__8159 = null;
     if(arguments.length > 1) {
-      p__24740 = cljs.core.array_seq(Array.prototype.slice.call(arguments, 1), 0)
+      p__8159 = cljs.core.array_seq(Array.prototype.slice.call(arguments, 1), 0)
     }
-    return client__delegate.call(this, uri, p__24740)
+    return client__delegate.call(this, uri, p__8159)
   };
   client.cljs$lang$maxFixedArity = 1;
-  client.cljs$lang$applyTo = function(arglist__24745) {
-    var uri = cljs.core.first(arglist__24745);
-    var p__24740 = cljs.core.rest(arglist__24745);
-    return client__delegate(uri, p__24740)
+  client.cljs$lang$applyTo = function(arglist__8164) {
+    var uri = cljs.core.first(arglist__8164);
+    var p__8159 = cljs.core.rest(arglist__8164);
+    return client__delegate(uri, p__8159)
   };
   client.cljs$core$IFn$_invoke$arity$variadic = client__delegate;
   return client
@@ -26290,22 +26291,35 @@ goog.require("clj_wamp.websocket");
 goog.require("clj_wamp.client");
 goog.require("clj_wamp.client");
 crows.stuff.init = function init() {
-  var on_event_29860 = function(ws, topic, event) {
-    return console.log(event)
+  var on_event_31220 = function(ws, topic, event) {
+    return console.log("EVENT ", event)
   };
-  var on_open_29861 = function(on_event_29860) {
+  var on_open_31221 = function(on_event_31220) {
     return function(ws, sess_id) {
-      return console.log(sess_id)
+      console.log("OPENED ", sess_id);
+      clj_wamp.client.subscribe_BANG_.call(null, ws, "http://wamptutorial/event#chat");
+      clj_wamp.client.publish_BANG_.call(null, ws, "http://wamptutorial/event#chat", "Hi hi", "hi");
+      return clj_wamp.client.rpc_BANG_.call(null, ws, "http://wamptutorial/rpc#echo")
     }
-  }(on_event_29860);
-  var on_close_29862 = function(on_event_29860, on_open_29861) {
+  }(on_event_31220);
+  var on_close_31222 = function(on_event_31220, on_open_31221) {
     return function() {
       return console.log("closed")
     }
-  }(on_event_29860, on_open_29861);
-  var ws_29863 = clj_wamp.client.wamp_handler.call(null, "ws://localhost:3000/ws", new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null, "websocket-client", "websocket-client", 3092166659), clj_wamp.websocket.client, new cljs.core.Keyword(null, "on-open", "on-open", 3936747754), on_open_29861, new cljs.core.Keyword(null, "on-close", "on-close", 1416548348), on_close_29862, new cljs.core.Keyword(null, "on-event", "on-event", 1418683550), on_event_29860], null));
-  clj_wamp.client.subscribe_BANG_.call(null, ws_29863, "event:chat");
-  clj_wamp.client.publish_BANG_.call(null, ws_29863, "event:chat", "foo");
+  }(on_event_31220, on_open_31221);
+  var ws_31223 = clj_wamp.client.wamp_handler.call(null, "ws://localhost:8080/wamp", new cljs.core.PersistentArrayMap(null, 4, [new cljs.core.Keyword(null, "websocket-client", "websocket-client", 3092166659), clj_wamp.websocket.client, new cljs.core.Keyword(null, "on-open", "on-open", 3936747754), on_open_31221, new cljs.core.Keyword(null, "on-close", "on-close", 1416548348), on_close_31222, new cljs.core.Keyword(null, "on-event", "on-event", 1418683550), on_event_31220], null));
+  var conn_31224 = new WebSocket("ws://localhost:8080/ws");
+  conn_31224.onopen = function(e) {
+    console.log("connected");
+    return conn_31224.send("hello")
+  };
+  conn_31224.onerror = function() {
+    alert("error");
+    return console.log(arguments)
+  };
+  conn_31224.onmessage = function(e) {
+    return console.log(e)
+  };
   var scene = new THREE.Scene;
   var width = window.innerWidth;
   var height = window.innerHeight;
@@ -26318,19 +26332,19 @@ crows.stuff.init = function init() {
   var clock = new THREE.Clock;
   var render = function(scene, width, height, camera, controls, renderer, geometry, material, cube, clock) {
     return function cb() {
-      var delta_29864 = clock.getDelta();
-      controls.update(delta_29864);
+      var delta_31225 = clock.getDelta();
+      controls.update(delta_31225);
       requestAnimationFrame(cb);
       return renderer.render(scene, camera)
     }
   }(scene, width, height, camera, controls, renderer, geometry, material, cube, clock);
-  var n__4275__auto___29865 = geometry.vertices.length;
-  var i_29866 = 0;
+  var n__4275__auto___31226 = geometry.vertices.length;
+  var i_31227 = 0;
   while(true) {
-    if(i_29866 < n__4275__auto___29865) {
-      geometry.vertices[i_29866].z = cljs.core.rand.call(null);
-      var G__29867 = i_29866 + 1;
-      i_29866 = G__29867;
+    if(i_31227 < n__4275__auto___31226) {
+      geometry.vertices[i_31227].z = cljs.core.rand.call(null);
+      var G__31228 = i_31227 + 1;
+      i_31227 = G__31228;
       continue
     }else {
     }

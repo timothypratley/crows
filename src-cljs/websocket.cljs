@@ -34,6 +34,7 @@
     (when on-close
       (events/listen ws websocket-event/CLOSED #(on-close)))
     ; Connect to websocket server
+    (.log js/console (str "OPEN " uri))
     (.open ws uri protocol)
     ws))
 

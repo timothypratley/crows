@@ -14,6 +14,7 @@
 (defroutes app-routes
   (GET "/" [] "<p>Hello World</p>")
   (GET "/ws" req (handler req))
+  (GET "/wamp" req (wamp-handler req))
   (resources "/")
   (not-found "Not Found"))
 

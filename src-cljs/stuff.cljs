@@ -3,11 +3,12 @@
             [clj-wamp.websocket :as websocket]))
 
 (defn init []
-  #_(let [on-event (fn [ws topic event] (.log js/console event))
+  (let [on-event (fn [ws topic event] (.log js/console event))
         on-open (fn [ws sess-id] (.log js/console sess-id))
         on-close (fn [] (.log js/console "closed"))
-        ws (client/wamp-handler "ws://localhost:8080/ws"
-                                {:on-open  on-open
+        ws (client/wamp-handler "ws://localhost:3000/ws"
+                                {:websocket-client websocket/client
+                                 :on-open  on-open
                                  :on-close on-close
                                  :on-event on-event})]
     (client/subscribe! ws "event:chat")

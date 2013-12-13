@@ -1,10 +1,7 @@
 
 (ns clj-wamp.websocket
-  (:require [clojure.string :as string :refer [trim blank?]]
-            [goog.events :as events]
-            [goog.net.WebSocket :as websocket]
-            [goog.net.WebSocket.EventType :as websocket-event]
-            [goog.net.WebSocket.MessageEvent :as websocket-message]))
+  (:require [goog.events :as events]
+            [goog.net.WebSocket.EventType :as websocket-event]))
 
 ; Based on code by @neotyk (Thanks!)
 ; https://github.com/neotyk/ws-cljs/blob/master/src/cljs/websocket.cljs
@@ -26,17 +23,16 @@
   [uri & [{:keys [protocol on-open on-close on-message on-error
                   reconnect? next-reconnect]
            :or {reconnect? true}}]]
-  (let [ws (goog.net.WebSocket. reconnect? next-reconnect)
-        handler (events/EventHandler.)]
+  (let [ws (goog.net.WebSocket. reconnect? next-reconnect)]
     ; Set up callback listeners
     (when on-open
-      (.listen handler ws websocket-event/OPENED #(on-open ws)))
+      (events/listen ws websocket-event/OPENED #(on-open ws)))
     (when on-message
-      (.listen handler ws websocket-event/MESSAGE #(on-message ws (.-message %))))
+      (events/listen ws websocket-event/MESSAGE #(on-message ws (.-message %))))
     (when on-error
-      (.listen handler ws websocket-event/ERROR on-error))
+      (events/listen ws websocket-event/ERROR on-error))
     (when on-close
-      (.listen handler ws websocket-event/CLOSED #(on-close)))
+      (events/listen ws websocket-event/CLOSED #(on-close)))
     ; Connect to websocket server
     (.open ws uri protocol)
     ws))

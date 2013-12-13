@@ -44,7 +44,9 @@
 (defn wamp-handler
   "Returns a http-kit websocket handler with wamp subprotocol"
   [req]
-  (wamp/with-channel-validation req channel ""
+  (println "YOYO!")
+  (wamp/with-channel-validation req channel #"https?://localhost:8080"
+                                (println "BOBO!")
     (wamp/http-kit-handler channel
       {:on-open        on-open
        :on-close       on-close

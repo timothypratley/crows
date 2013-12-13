@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Crows versus Ravens</title>
+    <style>canvas { width: 100%; height: 100% }</style>
+    <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <p>AB</p>
+    <script src="//autobahn.s3.amazonaws.com/js/autobahn.min.js"></script>
+    <script>
+window.onload = function() {
+
+   // WAMP server
+   var wsuri = "ws://localhost:3000/ws";
+
+   ab.connect(wsuri,
+
+      // WAMP session was established
+      function (session) {
+
+         // asynchronous RPC, returns promise object
+         session.call("http://example.com/simple/calc#add",
+                      23, 7).then(
+
+            // RPC success callback
+            function (res) {
+               console.log("got result: " + res);
+            },
+
+            // RPC error callback
+            function (error, desc) {
+               console.log("error: " + desc);
+            }
+         );
+      },
+
+      // WAMP session is gone
+      function (code, reason) {
+         console.log(reason);
+      }
+   );
+};
+    </script>
+
+    </body>
+</html>

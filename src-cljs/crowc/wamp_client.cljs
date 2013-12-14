@@ -1,6 +1,6 @@
-(ns clj-wamp.client
+(ns crowc.wamp-client
   (:require [clojure.string :as string :refer [trim blank?]]
-            [clj-wamp.websocket :as websocket]
+            [crowc.websocket-client :as websocket]
             [goog.crypt :as crypt]
             [goog.crypt.Hmac :as hmac]
             [goog.crypt.Sha256 :as sha256]
@@ -82,15 +82,16 @@
       (.log js/console "Unknown message" data))))
 
 (defn wamp-handler
-  [uri & [{:keys [on-open on-close on-event websocket-client
+  [uri & [{:keys [on-open on-close on-event
                   reconnect? next-reconnect]
-           :or {reconnect? true
-                websocket-client websocket/client}}]]
-  (websocket-client uri
-    {:reconnect? reconnect? :next-reconnect next-reconnect
-     :on-message (fn [ws data] (on-message ws data on-open on-event))
-     :on-close   on-close
-     :protocol   "wamp"}))
+           :or {reconnect? true}}]]
+  (websocket/connect! uri
+    {:reconnect? reconnect?
+     :next-reconnect next-reconnect
+     :on-message (fn [ws data]
+                   (on-message ws data on-open on-event))
+     :on-close on-close
+     :protocol "wamp"}))
 
 ;; CR-Authentication
 

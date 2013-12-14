@@ -1,4 +1,4 @@
-(ns crows.websocket
+(ns crows.wamp
   (:require [org.httpkit.server :as http-kit]
             [clj-wamp.server :as wamp]
             [taoensso.timbre :as timbre

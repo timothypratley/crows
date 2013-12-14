@@ -3,7 +3,6 @@
             [org.httpkit.server :refer [run-server]]))
 
 
-(defn -main [& args]
-    (run-server
-     app
-     {:port 8080}))
+(defn -main
+  [& args]
+  (run-server app {:port 8080}))

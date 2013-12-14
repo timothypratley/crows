@@ -6,7 +6,7 @@
   :main crows.main
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [net.mikera/core.matrix "0.16.0"]
-                 [org.clojure/clojurescript "0.0-2080"]
+                 [org.clojure/clojurescript "0.0-2030"]
                  [ring "1.2.1"]
                  [compojure "1.1.6"]
                  [enfocus "2.0.2"]

@@ -3,7 +3,7 @@
             [compojure.handler :refer [site api]]
             [compojure.route :refer [resources not-found]]
             [org.httpkit.server :refer :all]
-            [crows.websocket :refer [wamp-handler]]))
+            [crows.wamp :refer [wamp-handler]]))
 
 (defn handler [request]
   (with-channel request channel

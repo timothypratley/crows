@@ -1,5 +1,6 @@
 (ns crowc.render)
 
+
 (def scene (js/THREE.Scene.))
 (def width (.-innerWidth js/window))
 (def height (.-innerHeight js/window))
@@ -22,7 +23,7 @@
     (set!	(.-rollSpeed	controls) 0.1)
     (set!	(.-autoForward	controls) true)
     (set!	(.-dragToLook	controls) true)
-    (set! (.-z (.-position camera))  5)
+    (set! (.-z (.-position camera))  10)
     (render)))
 
 (defn add-mesh

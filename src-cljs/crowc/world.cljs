@@ -1,7 +1,6 @@
 (ns crowc.world)
 
 
-(def world (js/THREE.Object3D.))
 
 (defn createChild
   [parent t index]
@@ -15,3 +14,14 @@
     (.add parent e)
     (set! (.-position e) (js/THREE.Vector3. x y 0))
     e))
+
+(defn expand [object zoom ]
+  (replace-closest object)
+  (ensure-children object)
+  (request object)
+  (colapse-below zoom))
+
+(defn create
+  []
+  (let [world (js/THREE.Object3D.)]
+    world))

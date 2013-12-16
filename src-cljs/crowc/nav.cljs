@@ -1,14 +1,17 @@
 (ns crowc.nav
-  (:require [crowc.three :refer :all]))
+  (:require-macros [cljs.core.async.macros :refer [go]])
+  (:require [cljs.core.async :refer [>! <! chan put! close! timeout]]
+            [crowc.three :refer [v3]]
+            [domina.events :refer [listen!]]))
 
 
-(let [mousex 0
-      mousey 0
-      mouseleft 0
-      mousetop 0]
+(let [x (atom 0)
+      y 0
+      left 0
+      top 0]
 
-  (defn pick []
-    (v3. mousex mousey 1)
+  #_(defn pick []
+    (v3. x y 1)
 
     (.unprojectVector projector v camera)
     (ray. from, v.subSelf(from).normalize())
@@ -27,8 +30,20 @@
         (set! intersected nil))))
 
 
-  (defn attach [dom-element]
-    (doto dom-element
+  (defn attach [canvas]
+    #_(let [c (chan)]
+      (doseq [et [:mousemove :mousedown :mouseout]]
+        (listen! canvas et
+                 (fn on-event [e]
+                     (put! c e))))
+      (go (while true
+            (let [e (<! c)]
+              (do
+                (reset! x (.-pageX (.getBrowserEvent (domina.events/raw-event e))))
+                (.log js/console @x)
+))))))
+
+#_(doto dom-element
       (.addEventListener "mouseout"
                          (fn on-mouse-out []
                            (set! (.-over mouse) false))
@@ -52,4 +67,4 @@
                                  (on-select target)))
                              (if target
                                (free))))
-                         false)))))
+                         false))))

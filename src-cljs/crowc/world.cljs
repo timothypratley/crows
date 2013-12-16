@@ -15,7 +15,7 @@
     (set! (.-position e) (js/THREE.Vector3. x y 0))
     e))
 
-(defn expand [object zoom ]
+#_(defn expand [object zoom ]
   (replace-closest object)
   (ensure-children object)
   (request object)

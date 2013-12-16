@@ -1,4 +1,5 @@
-(ns crowc.render)
+(ns crowc.render
+  (:require [domina :refer [append!]]))
 
 
 (let [scene (js/THREE.Scene.)
@@ -8,23 +9,32 @@
       near 0.1
       far 10000
       camera (js/THREE.PerspectiveCamera. fov (/ width height) near far)
-      controls (js/THREE.FlyControls. camera)
       clock (js/THREE.Clock.)
       container document.body]
 
   (defn create [canvas]
-    (if (.-webgl js/Detector)
-      (.append dom-element (.getWebGLErrorMessage js/Detector))
+    (if (not js/Detector.webgl)
+      (append! js/document.body (.getWebGLErrorMessage js/Detector))
       (let [renderer (js/THREE.WebGLRenderer. (clj->js {:canvas canvas}))
+            controls (js/THREE.FlyControls. camera canvas)
             resize (fn on-window-resize []
-                (let [width canvas.offsetWidth
-                      height canvas.offsetHeight]
+                (let [width canvas/offsetWidth
+                      height canvas/offsetHeight]
                   (.setSize renderer width height)
                   (set! (.-aspect camera) (/ width height))
                   (set! (.-radius camera) (/ (+ width height) 4))
                   (.updateProjectionMatrix camera)))]
-        (.addEventListener window "resize" resize false)
+        (.addEventListener js/window "resize" resize false)
         (resize)
+
+        (doto controls
+          (aset "movementSpeed" 0.1)
+          (aset "rollSpeed" 0.1)
+          (aset "autoForward" true)
+          (aset "dragToLook" true))
+        ; TODO: better syntax for nested properties
+        (set! (.-z (.-position camera))  10)
+
         ((fn render-callback []
            (let [delta (.getDelta clock)]
              (.update controls delta))
@@ -32,15 +42,8 @@
            (js/requestAnimationFrame render-callback)))
         renderer)))
 
-  (defn controls []
-    (doto controls
-      (aset "domElement" renderer)
-      (aset "movementSpeed" 0.1)
-      (aset "rollSpeed" 0.1)
-      (aset "autoForward" true)
-      (aset "dragToLook" true))
-    ; TODO: better syntax for nested properties
-    (set! (.-z (.-position camera))  10))
+  (defn get-scene []
+    scene)
 
   (defn add-mesh []
     (let [geometry (js/THREE.PlaneGeometry. 8 8 8 8)

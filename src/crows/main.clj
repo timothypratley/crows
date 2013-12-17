@@ -5,4 +5,5 @@
 
 (defn -main
   [& args]
+  (println "Server started")
   (run-server app {:port 8080}))

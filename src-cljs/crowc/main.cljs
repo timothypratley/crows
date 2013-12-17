@@ -2,7 +2,7 @@
   (:require [crowc.connection :as connection]
             [crowc.render :as render]
             [crowc.world :as world]
-            [crowc.nav :as nav]
+            [crowc.picking :as picking]
             [domina :refer [by-id]]
             [domina.events :refer [listen]]))
 

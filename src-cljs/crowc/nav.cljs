@@ -4,39 +4,27 @@
             [crowc.three :refer [Vector3 Projector]]
             [domina.events :refer [listen!]]))
 
-
-(let [over-material (MeshLambertMaterial. (clj->js {:color 0xFF0000}))]
-  (defn emphasize [obj]
-    (aset obj "materialBackup" (aget obj "material"))
-    (aset obj "material" over-material)
-    (aset obj "scaleBackup" (aget obj "scale"))
-    (aset obj "scale" (.multiplyScalar (.clone scale) 1.1)))
-  (defn restore [object]
-    (aset obj "material" (aget obj "materialBackup"))
-    (aset obj "scale" (aget obj "scaleBackup"))))
-
-(let [intersected (atom nil)]
-  (defn pick [x y]
-    (let [projector (Projector.)
-          v (Vector3. x y 1)
-          v (.unprojectVector projector v camera)
-          from (.-position camera)
-          direction (.normalize (.subSelf v from))
-          ray (Ray. from direction)
-          intersects (.intersectScene ray scene)]
-      (if (seq intersects)
-        (let [new-intersect (aget (first intersects) "object")]
-          (when (not= @intersected new-intersect)
-            (when @intersected
-              (restore intersected))
-            (reset! intersected new-intersect)
-            (emphasize @intersected)
-            (picked @intersected)))
-        (when @intersected
-          (restore intersected)
-          (unpicked @inersected)
-          (reset! intersected nil))))))
-
+(def [pressed (atom #{})
+      key-codes {:shift 16
+                 :ctrl 17
+                 :up 38
+                 :down 40
+                 :left 37
+                 :right 39}
+      mult-action {:shift [:speed 0.1]
+                   :ctrl [:speed 10]}
+      add-action {\w [:forward 1]
+                  \s [:forward -1]
+                  \a [:left 1]
+                  \d [:left -1]
+                  \r [:pitch 1]
+                  \f [:pitch -1]
+                  :up [:pitch 1]
+                  :down [:pitch -1]
+                  :left [:yaw 1]
+                  :right [:yaw -1]
+                  \q [:yaw 1]
+                  \e [:yaw -1]}])
 
 (defn attach [canvas]
   (listen! canvas :mousedown

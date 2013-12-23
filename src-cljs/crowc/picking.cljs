@@ -1,72 +1,49 @@
-(ns crowc.picking
-  (:require-macros [cljs.core.async.macros :refer [go]])
-  (:require [cljs.core.async :refer [>! <! chan put! close! timeout]]
-            [crowc.three :refer [Vector3 Projector]]
-            [domina.events :refer [listen!]]))
+(ns crowc.picking)
 
 
-(let [over-material (MeshLambertMaterial. (clj->js {:color 0xFF0000}))]
+(let [over-material (js/THREE.MeshLambertMaterial. (clj->js {:color 0xFF0000}))]
   (defn emphasize [obj]
     (aset obj "materialBackup" (aget obj "material"))
     (aset obj "material" over-material)
     (aset obj "scaleBackup" (aget obj "scale"))
-    (aset obj "scale" (.multiplyScalar (.clone scale) 1.1)))
-  (defn restore [object]
+    (aset obj "scale" (.multiplyScalar (.clone (aget obj "scale")) 1.1)))
+  (defn restore [obj]
     (aset obj "material" (aget obj "materialBackup"))
     (aset obj "scale" (aget obj "scaleBackup"))))
 
 (let [intersected (atom nil)
       target (atom nil)]
-  (defn pick [x y]
-    (let [projector (Projector.)
-          v (Vector3. x y 1)
+  (defn pick [camera scene x y]
+    (let [projector (js/THREE.Projector.)
+          v (js/THREE.Vector3. x y 1)
           v (.unprojectVector projector v camera)
-          from (.-position camera)
-          direction (.normalize (.subSelf v from))
-          ray (Ray. from direction)
-          intersects (.intersectScene ray scene)]
+          from (aget camera "position")
+          direction (.normalize (.sub v from))
+          ray (js/THREE.Raycaster. from direction)
+          intersects (when scene
+                       (.intersectObjects ray scene))]
       (if (seq intersects)
         (let [new-intersect (aget (first intersects) "object")]
           (when (not= @intersected new-intersect)
             (when @intersected
               (restore intersected))
             (reset! intersected new-intersect)
-            ;(picked @intersected)
-            (emphasize @intersected)))
+            (emphasize @intersected)
+            [:picked @intersected]))
         (when @intersected
           (restore intersected)
-          ;(unpicked @intersected)
-          (reset! intersected nil)))))
+          (reset! intersected nil)
+          [:unpicked]))))
 
   (defn select []
     (if @intersected
       (do
         (if (= @intersected @target)
-          nil ;(reselected @intersected)
+          [:reselected @intersected]
           (do
-            ;(selected @intersected)
-            (reset! target @intersected))))
+            (reset! target @intersected)
+            [:selected @intersected])))
       (when @target
-        ;(untargeted)
-        (reset! target nil)))))
+        (reset! target nil)
+        [:untargeted]))))
 
-;; need to remember mousex/y because render changes and we need to repick at current pos
-
-(defn attach [canvas]
-  (listen! canvas :mousedown
-           (fn on-mouse-down [e]
-             (.preventDefault e)
-             (let [be (.getBrowserEvent (domina.events/raw-event e))]
-               (pick 0.5 0.5)))))
-
-#_(let [c (chan)]
-    (doseq [et [:mousemove :mousedown :mouseout]]
-      (listen! canvas et
-               (fn on-event [e]
-                 (put! c e))))
-    (go (while true
-          (let [e (<! c)]
-            (do
-              (reset! x (.-pageX (.getBrowserEvent (domina.events/raw-event e))))
-              (.log js/console @x)
-              )))))

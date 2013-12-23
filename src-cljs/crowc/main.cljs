@@ -2,17 +2,16 @@
   (:require [crowc.connection :as connection]
             [crowc.render :as render]
             [crowc.world :as world]
+            [crowc.nav :as nav]
             [crowc.picking :as picking]
-            [domina :refer [by-id]]
-            [domina.events :refer [listen]]))
+            [domina]))
 
 
 (defn init []
   ;(connection/connect-wamp)
   ;(connection/connect-ws)
-  (let [canvas (by-id "render-canvas")]
+  (let [canvas (domina/by-id "render-canvas")]
     (when (render/create canvas)
-      (nav/attach canvas)
       (render/add-mesh)
       (let [w (world/create)]
         (.add (render/get-scene) w)

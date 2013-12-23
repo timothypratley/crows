@@ -1,5 +1,8 @@
 (ns crowc.render
-  (:require [domina :refer [append!]]))
+  (:require [domina]
+            [domina.events :refer [listen!]]
+            [crowc.nav :as nav]
+            [crowc.audio :as audio]))
 
 
 (let [scene (js/THREE.Scene.)
@@ -14,9 +17,8 @@
 
   (defn create [canvas]
     (if (not js/Detector.webgl)
-      (append! js/document.body (.getWebGLErrorMessage js/Detector))
+      (domina/append! js/document.body (.getWebGLErrorMessage js/Detector))
       (let [renderer (js/THREE.WebGLRenderer. (clj->js {:canvas canvas}))
-            controls (js/THREE.FlyControls. camera canvas)
             resize (fn on-window-resize []
                 (let [width canvas/offsetWidth
                       height canvas/offsetHeight]
@@ -24,20 +26,16 @@
                   (set! (.-aspect camera) (/ width height))
                   (set! (.-radius camera) (/ (+ width height) 4))
                   (.updateProjectionMatrix camera)))]
-        (.addEventListener js/window "resize" resize false)
+        (listen! js/window :resize resize)
         (resize)
 
-        (doto controls
-          (aset "movementSpeed" 0.1)
-          (aset "rollSpeed" 0.1)
-          (aset "autoForward" true)
-          (aset "dragToLook" true))
-        ; TODO: better syntax for nested properties
         (set! (.-z (.-position camera))  10)
+        (nav/attach canvas)
+        (.focus canvas)
 
         ((fn render-callback []
-           (let [delta (.getDelta clock)]
-             (.update controls delta))
+           (let [t (min 1.0 (.getDelta clock))]
+             (audio/update (nav/update canvas camera scene t zoom)))
            (.render renderer scene camera)
            (js/requestAnimationFrame render-callback)))
         renderer)))

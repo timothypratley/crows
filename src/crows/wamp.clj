@@ -6,7 +6,7 @@
 
 
 ;; Topic BaseUrls
-(def base-url "http://wamptutorial")
+(def base-url "crows")
 (def rpc-base-url (str base-url "/rpc#"))
 (def evt-base-url (str base-url "/event#"))
 

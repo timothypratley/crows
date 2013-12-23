@@ -1,20 +1,21 @@
 (ns crowc.wamp-client
-  (:require [clojure.string :as string :refer [trim blank?]]
-            [crowc.websocket-client :as websocket]
+  (:require [crowc.websocket :as websocket]
+            [clojure.string :as string :refer [trim blank?]]
             [goog.crypt :as crypt]
             [goog.crypt.Hmac :as hmac]
             [goog.crypt.Sha256 :as sha256]
             [goog.crypt.base64 :as base64]))
 
-(def ^:const TYPE-ID-WELCOME     0) ; Server-to-client (Aux)
-(def ^:const TYPE-ID-PREFIX      1) ; Client-to-server (Aux)
-(def ^:const TYPE-ID-CALL        2) ; Client-to-server (RPC)
-(def ^:const TYPE-ID-CALLRESULT  3) ; Server-to-client (RPC)
-(def ^:const TYPE-ID-CALLERROR   4) ; Server-to-client (RPC)
-(def ^:const TYPE-ID-SUBSCRIBE   5) ; Client-to-server (PubSub)
-(def ^:const TYPE-ID-UNSUBSCRIBE 6) ; Client-to-server (PubSub)
-(def ^:const TYPE-ID-PUBLISH     7) ; Client-to-server (PubSub)
-(def ^:const TYPE-ID-EVENT       8) ; Server-to-client (PubSub)
+
+(def ^:const WELCOME     0) ; Server-to-client (Aux)
+(def ^:const PREFIX      1) ; Client-to-server (Aux)
+(def ^:const CALL        2) ; Client-to-server (RPC)
+(def ^:const CALLRESULT  3) ; Server-to-client (RPC)
+(def ^:const CALLERROR   4) ; Server-to-client (RPC)
+(def ^:const SUBSCRIBE   5) ; Client-to-server (PubSub)
+(def ^:const UNSUBSCRIBE 6) ; Client-to-server (PubSub)
+(def ^:const PUBLISH     7) ; Client-to-server (PubSub)
+(def ^:const EVENT       8) ; Server-to-client (PubSub)
 
 (def rpc-callbacks (atom {}))
 
@@ -25,26 +26,26 @@
 
 (defn prefix!
   [ws prefix curi]
-  (send! ws [TYPE-ID-PREFIX prefix curi]))
+  (send! ws [PREFIX prefix curi]))
 
 (defn rpc!
   [ws curi params callback]
   (let [call-id (.toString (.random js/Math) 36) ; TODO
-        msg (into [TYPE-ID-CALL call-id curi] params)]
+        msg (into [CALL call-id curi] params)]
     (swap! rpc-callbacks assoc call-id callback)
     (send! ws msg)))
 
 (defn subscribe!
   [ws curi]
-  (send! ws [TYPE-ID-SUBSCRIBE curi]))
+  (send! ws [SUBSCRIBE curi]))
 
 (defn unsubscribe!
   [ws curi]
-  (send! ws [TYPE-ID-UNSUBSCRIBE curi]))
+  (send! ws [UNSUBSCRIBE curi]))
 
 (defn publish!
   [ws curi event & more]
-  (let [msg [TYPE-ID-PUBLISH curi event]]
+  (let [msg [PUBLISH curi event]]
     (send! ws (if more (into msg more) msg))))
 
 (defn close!
@@ -56,25 +57,25 @@
   (let [msg (js->clj (JSON/parse data))]
     ;(.log js/console "WAMP message" (pr-str msg))
     (condp = (first msg)
-      TYPE-ID-WELCOME
+      WELCOME
       ; don't start until Welcome message received
       (on-open ws (second msg))
 
-      TYPE-ID-CALLRESULT
+      CALLRESULT
       (let [call-id (second msg)
             result  (last msg)]
         (when-let [rpc-cb (get @rpc-callbacks call-id)]
           (rpc-cb ws true result)
           (swap! rpc-callbacks dissoc call-id)))
 
-      TYPE-ID-CALLERROR
+      CALLERROR
       (let [call-id  (second msg)
             err-info (drop 2 msg)]
         (when-let [rpc-cb (get @rpc-callbacks call-id)]
           (rpc-cb ws false err-info)
           (swap! rpc-callbacks dissoc call-id)))
 
-      TYPE-ID-EVENT
+      EVENT
       (let [topic (second msg)
             event (last msg)]
         (on-event ws topic event))
@@ -117,4 +118,4 @@
         (if success?
           (let [signature (sign-fn password challenge)]
             (rpc! ws "http://api.wamp.ws/procedure#auth" [signature] callback))
-          (callback false challenge))))))
+          (callback ws false challenge))))))

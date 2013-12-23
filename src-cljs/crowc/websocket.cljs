@@ -1,4 +1,4 @@
-(ns crowc.websocket-client
+(ns crowc.websocket
   (:require [goog.events :as events]
             [goog.net.WebSocket.EventType :as et]))
 

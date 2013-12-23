@@ -1,35 +1,29 @@
 (ns crowc.connection
-  (:require [crowc.wamp-client :as wamp]
-            [crowc.websocket-client :as websocket]))
+  (:require [crowc.wamp-client :as wamp]))
 
-(defn connect-wamp
+
+(defn connect
   []
-  (let [on-event (fn [ws topic event] (.log js/console "EVENT " event))
-        on-open (fn [ws sess-id]
-                  (.log js/console "OPENED " sess-id)
-                  (wamp/subscribe! ws "http://wamptutorial/event#chat")
-                  (wamp/publish! ws "http://wamptutorial/event#chat" "Hi hi" "hi")
-                  (wamp/rpc! ws "http://wamptutorial/rpc#echo" "hi" identity))
-        on-close (fn [] (.log js/console "closed"))
-        ws (wamp/wamp-handler "ws://localhost:8080/wamp"
-                                {:websocket-client websocket/client
-                                 :on-open  on-open
-                                 :on-close on-close
-                                 :on-event on-event})]))
-
-(defn connect-ws
-  []
-  (let [conn (js/WebSocket. "ws://localhost:8080/ws")]
-    (set! (.-onopen conn)
-          (fn [e]
-            (.log js/console "connected")
-            (.send conn "hello")))
-
-    (set! (.-onerror conn)
-          (fn []
-            (js/alert "error")
-            (.log js/console js/arguments)))
-
-    (set! (.-onmessage conn)
-          (fn [e]
-            (.log js/console e)))))
+  (wamp/wamp-handler
+   "ws://localhost:8080/wamp"
+   {:on-open (fn on-open
+               [ws sess-id]
+               (.log js/console "OPENED " sess-id)
+               (wamp/auth! ws "guest" "secret-password"
+                           (fn on-auth [_ success? result]
+                             (if success?
+                               (do
+                                 (.log js/console "Authenticated:" (pr-str result))
+                                 (wamp/subscribe! ws "crows/event#chat")
+                                 (wamp/publish! ws "crows/event#chat" "Hi hi" "hi")
+                                 (wamp/rpc! ws "crows/rpc#echo" ["hi"]
+                                            (fn [_ success? result]
+                                              (.log js/console "RPC:" success? (pr-str result))))
+                                 #_(wamp/send! ws "custom message"))
+                               (.log js/console "Failed to authenticate")))))
+    :on-close (fn on-close
+                []
+                (.log js/console "closed"))
+    :on-event (fn on-event
+                [ws topic event]
+                (.log js/console "EVENT " event))}))

@@ -126,7 +126,7 @@
                  false))
       (listen! :mousewheel
                (fn on-mouse-wheel [e]
-                 (.log console/js e))))))
+                 (.log js/console e))))))
 
 #_(let [c (chan)]
     (doseq [et [:mousemove :mousedown :mouseout]]

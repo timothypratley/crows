@@ -8,14 +8,11 @@
 
 
 (defn init []
-  ;(connection/connect-wamp)
-  ;(connection/connect-ws)
   (let [canvas (domina/by-id "render-canvas")]
-    (when (render/create canvas)
-      (render/add-mesh)
-      (let [w (world/create)]
-        (.add (render/get-scene) w)
-        (world/createChild w "foo" 44)
-        (world/createChild w "foo" 77)))))
+    (when (render/create canvas world/scene)
+      (connection/connect)
+      (world/create-child world/scene 51 1 :terrain)
+      (world/create-child world/scene 44 1 :portal)
+      (world/create-child world/scene 77 2 :building))))
 
 (set! (.-onload js/window) init)

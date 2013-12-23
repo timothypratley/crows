@@ -2,12 +2,9 @@
   (:require [[clojure.core.matrix :refer :all]]))
 
 
-
 (def world
   "The domain, the state of everything."
   (atom nil))
-
-
 
 (defn update-drone-command
   [drone-id location heading]

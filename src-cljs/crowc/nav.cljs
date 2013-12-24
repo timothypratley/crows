@@ -63,10 +63,10 @@
       (-> acc
           (update-in [:yaw] +
                      (/ (- (:clientX @mouse-prev) (:clientX @mouse))
-                        canvas/offsetWidth 0.1))
+                        canvas/offsetWidth 0.2))
           (update-in [:pitch] +
                      (/ (- (:clientY @mouse-prev) (:clientY @mouse))
-                        canvas/offsetWidth 0.1)))
+                        canvas/offsetWidth 0.2)))
       acc))
 
   (defn- input
@@ -89,7 +89,9 @@
     (set! (.-matrixWorldNeedsUpdate obj) true)
     (when @mouse
       (reset! mouse-prev @mouse)
-      (picking/pick obj scene (:clientX @mouse) (:clientY @mouse))))
+      (picking/pick obj scene
+                    (dec (/ (:clientX @mouse) (.-clientWidth canvas) 0.5))
+                    (inc (- (/ (:clientY @mouse) (.-clientHeight canvas) 0.5))))))
 
   (defn attach
     [canvas]

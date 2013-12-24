@@ -10,7 +10,7 @@
     (domina/append! js/document.body (.getWebGLErrorMessage js/Detector))
     (let [renderer (js/THREE.WebGLRenderer. (clj->js {:canvas canvas}))
           clock (js/THREE.Clock.)
-          fov 75
+          fov 35
           near 0.1
           far 10000
           camera (js/THREE.PerspectiveCamera. fov (/ (.-innerWidth js/window) (.-innerHeight js/window)) near far)

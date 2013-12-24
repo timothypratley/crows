@@ -22289,35 +22289,44 @@ cljs.core.special_symbol_QMARK_ = function special_symbol_QMARK_(x) {
 };
 goog.provide("crowc.world");
 goog.require("cljs.core");
-crowc.world.scene = new THREE.Scene;
+crowc.world.scene = function() {
+  var G__812815 = new THREE.Scene;
+  G__812815.add(THREE.AmbientLight(8947848));
+  G__812815.add(function() {
+    var d = new THREE.DirectionalLight(16777215, 0.5);
+    d.position.set(500, -250, 1E3);
+    return d
+  }());
+  return G__812815
+}();
 crowc.world.types = cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null, "terrain", "terrain", 3885434535), cljs.core.PersistentVector.fromArray([function() {
   return new THREE.PlaneGeometry(8, 8, 8, 8)
 }, function() {
-  return new THREE.MeshPhongMaterial(cljs.core.clj__GT_js.call(null, cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null, "color", "color", 1108746965), 65280, new cljs.core.Keyword(null, "wireframe", "wireframe", 4367087482), true], true)))
+  return new THREE.MeshLambertMaterial({"color":34816, "wireframe":true})
 }], true), new cljs.core.Keyword(null, "portal", "portal", 4326390750), cljs.core.PersistentVector.fromArray([function() {
   return new THREE.SphereGeometry(3)
 }, function() {
-  return new THREE.MeshPhongMaterial(cljs.core.clj__GT_js.call(null, cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null, "color", "color", 1108746965), 17476, new cljs.core.Keyword(null, "wireframe", "wireframe", 4367087482), true], true)))
+  return new THREE.MeshLambertMaterial({"color":136, "wireframe":true})
 }], true), new cljs.core.Keyword(null, "landmark", "landmark", 3692273322), cljs.core.PersistentVector.fromArray([function() {
   return new THREE.CubeGeometry(3, 3, 3)
 }, function() {
-  return new THREE.MeshPhongMaterial(cljs.core.clj__GT_js.call(null, cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null, "color", "color", 1108746965), 1122867], true)))
+  return new THREE.MeshLambertMaterial({"color":8912896})
 }], true)], true);
 crowc.world.create = function create(t) {
-  var vec__253411 = crowc.world.types.call(null, t);
-  var newgeo = cljs.core.nth.call(null, vec__253411, 0, null);
-  var newmat = cljs.core.nth.call(null, vec__253411, 1, null);
+  var vec__812817 = crowc.world.types.call(null, t);
+  var newgeo = cljs.core.nth.call(null, vec__812817, 0, null);
+  var newmat = cljs.core.nth.call(null, vec__812817, 1, null);
   var geometry = newgeo.call(null);
   var material = newmat.call(null);
   var mesh = new THREE.Mesh(geometry, material);
   if(cljs.core._EQ_.call(null, t, new cljs.core.Keyword(null, "terrain", "terrain", 3885434535))) {
-    var n__4083__auto___253412 = geometry.vertices.length;
-    var i_253413 = 0;
+    var n__4083__auto___812818 = geometry.vertices.length;
+    var i_812819 = 0;
     while(true) {
-      if(i_253413 < n__4083__auto___253412) {
-        geometry.vertices[i_253413].z = cljs.core.rand.call(null);
-        var G__253414 = i_253413 + 1;
-        i_253413 = G__253414;
+      if(i_812819 < n__4083__auto___812818) {
+        geometry.vertices[i_812819].z = cljs.core.rand.call(null);
+        var G__812820 = i_812819 + 1;
+        i_812819 = G__812820;
         continue
       }else {
       }
@@ -22345,8 +22354,8 @@ crowc.world.ensure_children = function ensure_children(parent, size) {
     while(true) {
       if(i < n__4083__auto__) {
         crowc.world.create_child.call(null, parent, i, 0, new cljs.core.Keyword(null, "unknown", "unknown", 729063356));
-        var G__253415 = i + 1;
-        i = G__253415;
+        var G__812821 = i + 1;
+        i = G__812821;
         continue
       }else {
         return null
@@ -31194,10 +31203,10 @@ domina.events.get_listeners = function get_listeners(content, type) {
 };
 goog.provide("crowc.picking");
 goog.require("cljs.core");
-var over_material_13704 = new THREE.MeshLambertMaterial(cljs.core.clj__GT_js.call(null, cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null, "color", "color", 1108746965), 16711680], true)));
+var over_material_829775 = new THREE.MeshLambertMaterial({"color":16711680});
 crowc.picking.emphasize = function emphasize(obj) {
   obj["materialBackup"] = obj["material"];
-  obj["material"] = over_material_13704;
+  obj["material"] = over_material_829775;
   obj["scaleBackup"] = obj["scale"];
   return obj["scale"] = obj["scale"].clone().multiplyScalar(1.1)
 };
@@ -31205,8 +31214,8 @@ crowc.picking.restore = function restore(obj) {
   obj["material"] = obj["materialBackup"];
   return obj["scale"] = obj["scaleBackup"]
 };
-var intersected_13705 = cljs.core.atom.call(null, null);
-var target_13706 = cljs.core.atom.call(null, null);
+var intersected_829776 = cljs.core.atom.call(null, null);
+var target_829777 = cljs.core.atom.call(null, null);
 crowc.picking.pick = function pick(camera, scene, x, y) {
   var projector = new THREE.Projector;
   var v = new THREE.Vector3(x, y, 1);
@@ -31214,24 +31223,24 @@ crowc.picking.pick = function pick(camera, scene, x, y) {
   var from = camera["position"];
   var direction = v__$1.sub(from).normalize();
   var ray = new THREE.Raycaster(from, direction);
-  var intersects = cljs.core.truth_(scene) ? ray.intersectObjects(scene) : null;
+  var intersects = cljs.core.truth_(scene) ? ray.intersectObject(scene, true) : null;
   if(cljs.core.seq.call(null, intersects)) {
     var new_intersect = cljs.core.first.call(null, intersects)["object"];
-    if(cljs.core.not_EQ_.call(null, cljs.core.deref.call(null, intersected_13705), new_intersect)) {
-      if(cljs.core.truth_(cljs.core.deref.call(null, intersected_13705))) {
-        crowc.picking.restore.call(null, intersected_13705)
+    if(cljs.core.not_EQ_.call(null, cljs.core.deref.call(null, intersected_829776), new_intersect)) {
+      if(cljs.core.truth_(cljs.core.deref.call(null, intersected_829776))) {
+        crowc.picking.restore.call(null, cljs.core.deref.call(null, intersected_829776))
       }else {
       }
-      cljs.core.reset_BANG_.call(null, intersected_13705, new_intersect);
-      crowc.picking.emphasize.call(null, cljs.core.deref.call(null, intersected_13705));
-      return cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "picked", "picked", 4320394226), cljs.core.deref.call(null, intersected_13705)], true)
+      cljs.core.reset_BANG_.call(null, intersected_829776, new_intersect);
+      crowc.picking.emphasize.call(null, cljs.core.deref.call(null, intersected_829776));
+      return cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "picked", "picked", 4320394226), cljs.core.deref.call(null, intersected_829776)], true)
     }else {
       return null
     }
   }else {
-    if(cljs.core.truth_(cljs.core.deref.call(null, intersected_13705))) {
-      crowc.picking.restore.call(null, intersected_13705);
-      cljs.core.reset_BANG_.call(null, intersected_13705, null);
+    if(cljs.core.truth_(cljs.core.deref.call(null, intersected_829776))) {
+      crowc.picking.restore.call(null, cljs.core.deref.call(null, intersected_829776));
+      cljs.core.reset_BANG_.call(null, intersected_829776, null);
       return cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "unpicked", "unpicked", 911930315)], true)
     }else {
       return null
@@ -31239,16 +31248,16 @@ crowc.picking.pick = function pick(camera, scene, x, y) {
   }
 };
 crowc.picking.select = function select() {
-  if(cljs.core.truth_(cljs.core.deref.call(null, intersected_13705))) {
-    if(cljs.core._EQ_.call(null, cljs.core.deref.call(null, intersected_13705), cljs.core.deref.call(null, target_13706))) {
-      return cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "reselected", "reselected", 3408466240), cljs.core.deref.call(null, intersected_13705)], true)
+  if(cljs.core.truth_(cljs.core.deref.call(null, intersected_829776))) {
+    if(cljs.core._EQ_.call(null, cljs.core.deref.call(null, intersected_829776), cljs.core.deref.call(null, target_829777))) {
+      return cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "reselected", "reselected", 3408466240), cljs.core.deref.call(null, intersected_829776)], true)
     }else {
-      cljs.core.reset_BANG_.call(null, target_13706, cljs.core.deref.call(null, intersected_13705));
-      return cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "selected", "selected", 2205476365), cljs.core.deref.call(null, intersected_13705)], true)
+      cljs.core.reset_BANG_.call(null, target_829777, cljs.core.deref.call(null, intersected_829776));
+      return cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "selected", "selected", 2205476365), cljs.core.deref.call(null, intersected_829776)], true)
     }
   }else {
-    if(cljs.core.truth_(cljs.core.deref.call(null, target_13706))) {
-      cljs.core.reset_BANG_.call(null, target_13706, null);
+    if(cljs.core.truth_(cljs.core.deref.call(null, target_829777))) {
+      cljs.core.reset_BANG_.call(null, target_829777, null);
       return cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "untargeted", "untargeted", 2098181883)], true)
     }else {
       return null
@@ -38775,31 +38784,31 @@ goog.require("crowc.picking");
 goog.require("crowc.picking");
 goog.require("domina.events");
 goog.require("cljs.core.async");
-var movement_speed_115788 = 1;
-var look_speed_115789 = 1;
-var mouse_115790 = cljs.core.atom.call(null, null);
-var mouse_prev_115791 = cljs.core.atom.call(null, null);
-var mouse_button_pressed_115792 = cljs.core.atom.call(null, false);
-var keys_pressed_115793 = cljs.core.atom.call(null, cljs.core.PersistentHashSet.EMPTY);
-var key_codes_115794 = cljs.core.PersistentHashMap.fromArrays([32, 96, 192, 33, 65, 97, 34, 66, 98, 35, 67, 99, 36, 68, 100, 37, 69, 101, 38, 70, 102, 39, 71, 103, 8, 40, 72, 104, 9, 73, 105, 74, 106, 75, 107, 76, 13, 45, 77, 109, 46, 78, 110, 79, 111, 16, 48, 80, 112, 144, 17, 49, 81, 113, 145, 18, 50, 82, 114, 19, 51, 83, 115, 20, 52, 84, 116, 53, 85, 117, 54, 86, 118, 182, 55, 87, 119, 183, 56, 88, 120, 57, 89, 121, 90, 122, 186, 27, 91, 123, 187, 219, 188, 220, 93, 189, 221, 190, 222, 191], ["Space", 
+var movement_speed_642097 = 1;
+var look_speed_642098 = 1;
+var mouse_642099 = cljs.core.atom.call(null, null);
+var mouse_prev_642100 = cljs.core.atom.call(null, null);
+var mouse_button_pressed_642101 = cljs.core.atom.call(null, false);
+var keys_pressed_642102 = cljs.core.atom.call(null, cljs.core.PersistentHashSet.EMPTY);
+var key_codes_642103 = cljs.core.PersistentHashMap.fromArrays([32, 96, 192, 33, 65, 97, 34, 66, 98, 35, 67, 99, 36, 68, 100, 37, 69, 101, 38, 70, 102, 39, 71, 103, 8, 40, 72, 104, 9, 73, 105, 74, 106, 75, 107, 76, 13, 45, 77, 109, 46, 78, 110, 79, 111, 16, 48, 80, 112, 144, 17, 49, 81, 113, 145, 18, 50, 82, 114, 19, 51, 83, 115, 20, 52, 84, 116, 53, 85, 117, 54, 86, 118, 182, 55, 87, 119, 183, 56, 88, 120, 57, 89, 121, 90, 122, 186, 27, 91, 123, 187, 219, 188, 220, 93, 189, 221, 190, 222, 191], ["Space", 
 "Numpad 0", "`", "Page Up", "A", "Numpad 1", "Page Down", "B", "Numpad 2", "End", "C", "Numpad 3", "Home", "D", "Numpad 4", "Left", "E", "Numpad 5", "Up", "F", "Numpad 6", "Right", "G", "Numpad 7", "Backspace", "Down", "H", "Numpad 8", "Tab", "I", "Numpad 9", "J", "Numpad *", "K", "Numpad +", "L", "Enter", "Insert", "M", "Numpad -", "Delete", "N", "Numpad .", "O", "Numpad /", "Shift", "0", "P", "F1", "Num Lock", "Ctrl", "1", "Q", "F2", "Scroll Lock", "Alt", "2", "R", "F3", "Pause/Break", "3", "S", 
 "F4", "Caps Lock", "4", "T", "F5", "5", "U", "F6", "6", "V", "F7", "My Computer", "7", "W", "F8", "My Calculator", "8", "X", "F9", "9", "Y", "F10", "Z", "F11", ";", "Esc", "Windows", "F12", "\x3d", "[", " ", "\\", "Right Click", "-", "]", ".", "'", "/"]);
-var key_config_115795 = cljs.core.PersistentHashMap.fromArrays([65, 68, 37, 69, 38, 70, 39, 40, 16, 17, 81, 82, 83, 87], [new cljs.core.Keyword(null, "slide-left", "slide-left", 2057068053), new cljs.core.Keyword(null, "slide-right", "slide-right", 3292872306), new cljs.core.Keyword(null, "look-left", "look-left", 2097625575), new cljs.core.Keyword(null, "roll-right", "roll-right", 3325114430), new cljs.core.Keyword(null, "look-up", "look-up", 1363635195), new cljs.core.Keyword(null, "fall", "fall", 
+var key_config_642104 = cljs.core.PersistentHashMap.fromArrays([65, 68, 37, 69, 38, 70, 39, 40, 16, 17, 81, 82, 83, 87], [new cljs.core.Keyword(null, "slide-left", "slide-left", 2057068053), new cljs.core.Keyword(null, "slide-right", "slide-right", 3292872306), new cljs.core.Keyword(null, "look-left", "look-left", 2097625575), new cljs.core.Keyword(null, "roll-right", "roll-right", 3325114430), new cljs.core.Keyword(null, "look-up", "look-up", 1363635195), new cljs.core.Keyword(null, "fall", "fall", 
 1017039597), new cljs.core.Keyword(null, "look-right", "look-right", 4550155488), new cljs.core.Keyword(null, "look-down", "look-down", 2097397378), new cljs.core.Keyword(null, "slow", "slow", 1017437555), new cljs.core.Keyword(null, "fast", "fast", 1017039822), new cljs.core.Keyword(null, "roll-left", "roll-left", 1503918793), new cljs.core.Keyword(null, "rise", "rise", 1017404987), new cljs.core.Keyword(null, "reverse", "reverse", 2113750612), new cljs.core.Keyword(null, "forward", "forward", 4631725623)]);
-var action_115796 = cljs.core.PersistentHashMap.fromArrays([new cljs.core.Keyword(null, "fast", "fast", 1017039822), new cljs.core.Keyword(null, "fall", "fall", 1017039597), new cljs.core.Keyword(null, "look-down", "look-down", 2097397378), new cljs.core.Keyword(null, "forward", "forward", 4631725623), new cljs.core.Keyword(null, "look-up", "look-up", 1363635195), new cljs.core.Keyword(null, "reverse", "reverse", 2113750612), new cljs.core.Keyword(null, "slow", "slow", 1017437555), new cljs.core.Keyword(null, 
+var action_642105 = cljs.core.PersistentHashMap.fromArrays([new cljs.core.Keyword(null, "fast", "fast", 1017039822), new cljs.core.Keyword(null, "fall", "fall", 1017039597), new cljs.core.Keyword(null, "look-down", "look-down", 2097397378), new cljs.core.Keyword(null, "forward", "forward", 4631725623), new cljs.core.Keyword(null, "look-up", "look-up", 1363635195), new cljs.core.Keyword(null, "reverse", "reverse", 2113750612), new cljs.core.Keyword(null, "slow", "slow", 1017437555), new cljs.core.Keyword(null, 
 "slide-right", "slide-right", 3292872306), new cljs.core.Keyword(null, "roll-left", "roll-left", 1503918793), new cljs.core.Keyword(null, "look-right", "look-right", 4550155488), new cljs.core.Keyword(null, "roll-right", "roll-right", 3325114430), new cljs.core.Keyword(null, "slide-left", "slide-left", 2057068053), new cljs.core.Keyword(null, "rise", "rise", 1017404987), new cljs.core.Keyword(null, "look-left", "look-left", 2097625575)], [cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, 
 "speed", "speed", 1123546041), cljs.core._STAR_, 5], true), cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "rise", "rise", 1017404987), cljs.core._, 1], true), cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "pitch", "pitch", 1120581298), cljs.core._, 1], true), cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "forward", "forward", 4631725623), cljs.core._PLUS_, 1], true), cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "pitch", 
 "pitch", 1120581298), cljs.core._PLUS_, 1], true), cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "forward", "forward", 4631725623), cljs.core._, 1], true), cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "speed", "speed", 1123546041), cljs.core._SLASH_, 5], true), cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "right", "right", 1122416014), cljs.core._PLUS_, 1], true), cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "roll", 
 "roll", 1017410543), cljs.core._PLUS_, 1], true), cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "yaw", "yaw", 1014023649), cljs.core._, 1], true), cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "roll", "roll", 1017410543), cljs.core._, 1], true), cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "right", "right", 1122416014), cljs.core._, 1], true), cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "rise", "rise", 1017404987), 
 cljs.core._PLUS_, 1], true), cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "yaw", "yaw", 1014023649), cljs.core._PLUS_, 1], true)]);
-var effect_115797 = cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null, "speed", "speed", 1123546041), 1, new cljs.core.Keyword(null, "forward", "forward", 4631725623), 0, new cljs.core.Keyword(null, "right", "right", 1122416014), 0, new cljs.core.Keyword(null, "rise", "rise", 1017404987), 0, new cljs.core.Keyword(null, "pitch", "pitch", 1120581298), 0, new cljs.core.Keyword(null, "yaw", "yaw", 1014023649), 0, new cljs.core.Keyword(null, "roll", "roll", 1017410543), 0], true);
+var effect_642106 = cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null, "speed", "speed", 1123546041), 1, new cljs.core.Keyword(null, "forward", "forward", 4631725623), 0, new cljs.core.Keyword(null, "right", "right", 1122416014), 0, new cljs.core.Keyword(null, "rise", "rise", 1017404987), 0, new cljs.core.Keyword(null, "pitch", "pitch", 1120581298), 0, new cljs.core.Keyword(null, "yaw", "yaw", 1014023649), 0, new cljs.core.Keyword(null, "roll", "roll", 1017410543), 0], true);
 crowc.nav.key_action = function key_action(t, acc, k) {
-  var temp__4090__auto__ = action_115796.call(null, key_config_115795.call(null, k));
+  var temp__4090__auto__ = action_642105.call(null, key_config_642104.call(null, k));
   if(cljs.core.truth_(temp__4090__auto__)) {
-    var vec__115783 = temp__4090__auto__;
-    var action__$1 = cljs.core.nth.call(null, vec__115783, 0, null);
-    var op = cljs.core.nth.call(null, vec__115783, 1, null);
-    var modifier = cljs.core.nth.call(null, vec__115783, 2, null);
+    var vec__642092 = temp__4090__auto__;
+    var action__$1 = cljs.core.nth.call(null, vec__642092, 0, null);
+    var op = cljs.core.nth.call(null, vec__642092, 1, null);
+    var modifier = cljs.core.nth.call(null, vec__642092, 2, null);
     return cljs.core.update_in.call(null, acc, cljs.core.PersistentVector.fromArray([action__$1], true), op, cljs.core._EQ_.call(null, action__$1, new cljs.core.Keyword(null, "speed", "speed", 1123546041)) ? modifier : t * modifier)
   }else {
     return acc
@@ -38807,80 +38816,80 @@ crowc.nav.key_action = function key_action(t, acc, k) {
 };
 crowc.nav.mouse_action = function mouse_action(canvas, acc) {
   if(cljs.core.truth_(function() {
-    var and__3285__auto__ = cljs.core.deref.call(null, mouse_prev_115791);
+    var and__3285__auto__ = cljs.core.deref.call(null, mouse_prev_642100);
     if(cljs.core.truth_(and__3285__auto__)) {
-      return cljs.core.deref.call(null, mouse_button_pressed_115792)
+      return cljs.core.deref.call(null, mouse_button_pressed_642101)
     }else {
       return and__3285__auto__
     }
   }())) {
-    return cljs.core.update_in.call(null, cljs.core.update_in.call(null, acc, cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "yaw", "yaw", 1014023649)], true), cljs.core._PLUS_, ((new cljs.core.Keyword(null, "clientX", "clientX", 1874491743)).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null, mouse_prev_115791)) - (new cljs.core.Keyword(null, "clientX", "clientX", 1874491743)).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null, mouse_115790))) / canvas.offsetWidth / 
-    0.1), cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "pitch", "pitch", 1120581298)], true), cljs.core._PLUS_, ((new cljs.core.Keyword(null, "clientY", "clientY", 1874491744)).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null, mouse_prev_115791)) - (new cljs.core.Keyword(null, "clientY", "clientY", 1874491744)).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null, mouse_115790))) / canvas.offsetWidth / 0.1)
+    return cljs.core.update_in.call(null, cljs.core.update_in.call(null, acc, cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "yaw", "yaw", 1014023649)], true), cljs.core._PLUS_, ((new cljs.core.Keyword(null, "clientX", "clientX", 1874491743)).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null, mouse_prev_642100)) - (new cljs.core.Keyword(null, "clientX", "clientX", 1874491743)).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null, mouse_642099))) / canvas.offsetWidth / 
+    0.2), cljs.core.PersistentVector.fromArray([new cljs.core.Keyword(null, "pitch", "pitch", 1120581298)], true), cljs.core._PLUS_, ((new cljs.core.Keyword(null, "clientY", "clientY", 1874491744)).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null, mouse_prev_642100)) - (new cljs.core.Keyword(null, "clientY", "clientY", 1874491744)).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null, mouse_642099))) / canvas.offsetWidth / 0.2)
   }else {
     return acc
   }
 };
 crowc.nav.input = function input(canvas, t, zoom) {
-  return crowc.nav.mouse_action.call(null, canvas, cljs.core.reduce.call(null, cljs.core.partial.call(null, crowc.nav.key_action, t), effect_115797, cljs.core.deref.call(null, keys_pressed_115793)))
+  return crowc.nav.mouse_action.call(null, canvas, cljs.core.reduce.call(null, cljs.core.partial.call(null, crowc.nav.key_action, t), effect_642106, cljs.core.deref.call(null, keys_pressed_642102)))
 };
 crowc.nav.update = function update(canvas, obj, scene, t, zoom) {
-  var map__115785_115798 = crowc.nav.input.call(null, canvas, t, zoom);
-  var map__115785_115799__$1 = cljs.core.seq_QMARK_.call(null, map__115785_115798) ? cljs.core.apply.call(null, cljs.core.hash_map, map__115785_115798) : map__115785_115798;
-  var roll_115800 = cljs.core.get.call(null, map__115785_115799__$1, new cljs.core.Keyword(null, "roll", "roll", 1017410543));
-  var yaw_115801 = cljs.core.get.call(null, map__115785_115799__$1, new cljs.core.Keyword(null, "yaw", "yaw", 1014023649));
-  var pitch_115802 = cljs.core.get.call(null, map__115785_115799__$1, new cljs.core.Keyword(null, "pitch", "pitch", 1120581298));
-  var rise_115803 = cljs.core.get.call(null, map__115785_115799__$1, new cljs.core.Keyword(null, "rise", "rise", 1017404987));
-  var right_115804 = cljs.core.get.call(null, map__115785_115799__$1, new cljs.core.Keyword(null, "right", "right", 1122416014));
-  var forward_115805 = cljs.core.get.call(null, map__115785_115799__$1, new cljs.core.Keyword(null, "forward", "forward", 4631725623));
-  var speed_115806 = cljs.core.get.call(null, map__115785_115799__$1, new cljs.core.Keyword(null, "speed", "speed", 1123546041));
-  var v_115807 = (new THREE.Vector3(right_115804, forward_115805, rise_115803)).normalize();
-  obj.quaternion.multiply((new THREE.Quaternion(pitch_115802, yaw_115801, roll_115800)).normalize());
-  obj.translateOnAxis(v_115807, t * speed_115806 * movement_speed_115788);
+  var map__642094_642107 = crowc.nav.input.call(null, canvas, t, zoom);
+  var map__642094_642108__$1 = cljs.core.seq_QMARK_.call(null, map__642094_642107) ? cljs.core.apply.call(null, cljs.core.hash_map, map__642094_642107) : map__642094_642107;
+  var roll_642109 = cljs.core.get.call(null, map__642094_642108__$1, new cljs.core.Keyword(null, "roll", "roll", 1017410543));
+  var yaw_642110 = cljs.core.get.call(null, map__642094_642108__$1, new cljs.core.Keyword(null, "yaw", "yaw", 1014023649));
+  var pitch_642111 = cljs.core.get.call(null, map__642094_642108__$1, new cljs.core.Keyword(null, "pitch", "pitch", 1120581298));
+  var rise_642112 = cljs.core.get.call(null, map__642094_642108__$1, new cljs.core.Keyword(null, "rise", "rise", 1017404987));
+  var right_642113 = cljs.core.get.call(null, map__642094_642108__$1, new cljs.core.Keyword(null, "right", "right", 1122416014));
+  var forward_642114 = cljs.core.get.call(null, map__642094_642108__$1, new cljs.core.Keyword(null, "forward", "forward", 4631725623));
+  var speed_642115 = cljs.core.get.call(null, map__642094_642108__$1, new cljs.core.Keyword(null, "speed", "speed", 1123546041));
+  var v_642116 = (new THREE.Vector3(right_642113, forward_642114, rise_642112)).normalize();
+  obj.quaternion.multiply((new THREE.Quaternion(pitch_642111, yaw_642110, roll_642109)).normalize());
+  obj.translateOnAxis(v_642116, t * speed_642115 * movement_speed_642097);
   obj.matrix.setPosition(obj.position);
   obj.matrix.makeRotationFromQuaternion(obj.quaternion);
   obj.matrixWorldNeedsUpdate = true;
-  if(cljs.core.truth_(cljs.core.deref.call(null, mouse_115790))) {
-    cljs.core.reset_BANG_.call(null, mouse_prev_115791, cljs.core.deref.call(null, mouse_115790));
-    return crowc.picking.pick.call(null, obj, scene, (new cljs.core.Keyword(null, "clientX", "clientX", 1874491743)).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null, mouse_115790)), (new cljs.core.Keyword(null, "clientY", "clientY", 1874491744)).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null, mouse_115790)))
+  if(cljs.core.truth_(cljs.core.deref.call(null, mouse_642099))) {
+    cljs.core.reset_BANG_.call(null, mouse_prev_642100, cljs.core.deref.call(null, mouse_642099));
+    return crowc.picking.pick.call(null, obj, scene, (new cljs.core.Keyword(null, "clientX", "clientX", 1874491743)).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null, mouse_642099)) / canvas.clientWidth / 0.5 - 1, -((new cljs.core.Keyword(null, "clientY", "clientY", 1874491744)).cljs$core$IFn$_invoke$arity$1(cljs.core.deref.call(null, mouse_642099)) / canvas.clientHeight / 0.5) + 1)
   }else {
     return null
   }
 };
 crowc.nav.attach = function attach(canvas) {
-  var G__115787 = canvas;
-  domina.events.listen_BANG_.call(null, G__115787, new cljs.core.Keyword(null, "keydown", "keydown", 4493897459), function on_key_down(e) {
+  var G__642096 = canvas;
+  domina.events.listen_BANG_.call(null, G__642096, new cljs.core.Keyword(null, "keydown", "keydown", 4493897459), function on_key_down(e) {
     domina.events.prevent_default.call(null, e);
-    return cljs.core.swap_BANG_.call(null, keys_pressed_115793, cljs.core.conj, (new cljs.core.Keyword(null, "keyCode", "keyCode", 4492913758)).cljs$core$IFn$_invoke$arity$1(e))
+    return cljs.core.swap_BANG_.call(null, keys_pressed_642102, cljs.core.conj, (new cljs.core.Keyword(null, "keyCode", "keyCode", 4492913758)).cljs$core$IFn$_invoke$arity$1(e))
   });
-  domina.events.listen_BANG_.call(null, G__115787, new cljs.core.Keyword(null, "keyup", "keyup", 1115849900), function on_key_up(e) {
-    return cljs.core.swap_BANG_.call(null, keys_pressed_115793, cljs.core.disj, (new cljs.core.Keyword(null, "keyCode", "keyCode", 4492913758)).cljs$core$IFn$_invoke$arity$1(e))
+  domina.events.listen_BANG_.call(null, G__642096, new cljs.core.Keyword(null, "keyup", "keyup", 1115849900), function on_key_up(e) {
+    return cljs.core.swap_BANG_.call(null, keys_pressed_642102, cljs.core.disj, (new cljs.core.Keyword(null, "keyCode", "keyCode", 4492913758)).cljs$core$IFn$_invoke$arity$1(e))
   });
-  domina.events.listen_BANG_.call(null, G__115787, new cljs.core.Keyword(null, "mousemove", "mousemove", 1601016168), function on_mouse_move(e) {
-    return cljs.core.reset_BANG_.call(null, mouse_115790, e)
+  domina.events.listen_BANG_.call(null, G__642096, new cljs.core.Keyword(null, "mousemove", "mousemove", 1601016168), function on_mouse_move(e) {
+    return cljs.core.reset_BANG_.call(null, mouse_642099, e)
   });
-  domina.events.listen_BANG_.call(null, G__115787, new cljs.core.Keyword(null, "mousedown", "mousedown", 1600748089), function on_mouse_down(e) {
-    cljs.core.reset_BANG_.call(null, mouse_button_pressed_115792, true);
+  domina.events.listen_BANG_.call(null, G__642096, new cljs.core.Keyword(null, "mousedown", "mousedown", 1600748089), function on_mouse_down(e) {
+    cljs.core.reset_BANG_.call(null, mouse_button_pressed_642101, true);
     domina.events.prevent_default.call(null, e);
     return crowc.picking.select.call(null)
   });
-  domina.events.listen_BANG_.call(null, G__115787, new cljs.core.Keyword(null, "mouseup", "mouseup", 2256972146), function on_mouse_up(e) {
-    return cljs.core.reset_BANG_.call(null, mouse_button_pressed_115792, false)
+  domina.events.listen_BANG_.call(null, G__642096, new cljs.core.Keyword(null, "mouseup", "mouseup", 2256972146), function on_mouse_up(e) {
+    return cljs.core.reset_BANG_.call(null, mouse_button_pressed_642101, false)
   });
-  domina.events.listen_BANG_.call(null, G__115787, new cljs.core.Keyword(null, "mouseover", "mouseover", 1601081963), function on_mouse_over(e) {
+  domina.events.listen_BANG_.call(null, G__642096, new cljs.core.Keyword(null, "mouseover", "mouseover", 1601081963), function on_mouse_over(e) {
     return canvas.focus()
   });
-  domina.events.listen_BANG_.call(null, G__115787, new cljs.core.Keyword(null, "mouseout", "mouseout", 894298107), function on_mouse_out(e) {
-    return cljs.core.reset_BANG_.call(null, keys_pressed_115793, cljs.core.PersistentHashSet.EMPTY)
+  domina.events.listen_BANG_.call(null, G__642096, new cljs.core.Keyword(null, "mouseout", "mouseout", 894298107), function on_mouse_out(e) {
+    return cljs.core.reset_BANG_.call(null, keys_pressed_642102, cljs.core.PersistentHashSet.EMPTY)
   });
-  domina.events.listen_BANG_.call(null, G__115787, new cljs.core.Keyword(null, "contextmenu", "contextmenu", 911789824), function on_context_menu(e) {
+  domina.events.listen_BANG_.call(null, G__642096, new cljs.core.Keyword(null, "contextmenu", "contextmenu", 911789824), function on_context_menu(e) {
     domina.events.prevent_default.call(null, e);
     domina.events.stop_propagation.call(null, e);
     return false
   });
-  domina.events.listen_BANG_.call(null, G__115787, new cljs.core.Keyword(null, "mousewheel", "mousewheel", 2043515208), function on_mouse_wheel(e) {
+  domina.events.listen_BANG_.call(null, G__642096, new cljs.core.Keyword(null, "mousewheel", "mousewheel", 2043515208), function on_mouse_wheel(e) {
     return console.log(e)
   });
-  return G__115787
+  return G__642096
 };
 goog.provide("crowc.audio");
 goog.require("cljs.core");
@@ -38905,7 +38914,7 @@ crowc.render.create = function create(canvas, scene) {
   }else {
     var renderer = new THREE.WebGLRenderer(cljs.core.clj__GT_js.call(null, cljs.core.PersistentArrayMap.fromArray([new cljs.core.Keyword(null, "canvas", "canvas", 3941165258), canvas], true)));
     var clock = new THREE.Clock;
-    var fov = 75;
+    var fov = 35;
     var near = 0.1;
     var far = 1E4;
     var camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, near, far);
@@ -38925,12 +38934,12 @@ crowc.render.create = function create(canvas, scene) {
     crowc.nav.attach.call(null, canvas);
     canvas.focus();
     (function render_callback() {
-      var t_13898 = function() {
+      var t_278833 = function() {
         var x__3606__auto__ = 1;
         var y__3607__auto__ = clock.getDelta();
         return x__3606__auto__ < y__3607__auto__ ? x__3606__auto__ : y__3607__auto__
       }();
-      crowc.audio.update.call(null, crowc.nav.update.call(null, canvas, camera, scene, t_13898, crowc.render.zoom));
+      crowc.audio.update.call(null, crowc.nav.update.call(null, canvas, camera, scene, t_278833, crowc.render.zoom));
       renderer.render(scene, camera);
       return requestAnimationFrame(render_callback)
     }).call(null);
@@ -38956,7 +38965,7 @@ crowc.main.init = function init() {
     crowc.connection.connect.call(null);
     crowc.world.create_child.call(null, crowc.world.scene, 51, 1, new cljs.core.Keyword(null, "terrain", "terrain", 3885434535));
     crowc.world.create_child.call(null, crowc.world.scene, 44, 1, new cljs.core.Keyword(null, "portal", "portal", 4326390750));
-    return crowc.world.create_child.call(null, crowc.world.scene, 77, 2, new cljs.core.Keyword(null, "building", "building", 3878225446))
+    return crowc.world.create_child.call(null, crowc.world.scene, 77, 2, new cljs.core.Keyword(null, "landmark", "landmark", 3692273322))
   }else {
     return null
   }

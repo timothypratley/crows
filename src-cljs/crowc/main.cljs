@@ -13,6 +13,6 @@
       (connection/connect)
       (world/create-child world/scene 51 1 :terrain)
       (world/create-child world/scene 44 1 :portal)
-      (world/create-child world/scene 77 2 :building))))
+      (world/create-child world/scene 77 2 :landmark))))
 
 (set! (.-onload js/window) init)

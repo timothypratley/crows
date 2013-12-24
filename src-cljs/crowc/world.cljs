@@ -1,16 +1,20 @@
 (ns crowc.world)
 
 
-(def scene (js/THREE.Scene.))
+(def scene (doto (js/THREE.Scene.)
+             (.add (js/THREE.AmbientLight 0x888888))
+             (.add (let [d (js/THREE.DirectionalLight. 0xffffff 0.5)]
+                     (.set (.-position d) 500 -250 1000)
+                     d))))
 
 (def types {:terrain [#(js/THREE.PlaneGeometry. 8 8 8 8)
-                      #(js/THREE.MeshPhongMaterial. (clj->js {:color 0x00ff00
-                                                              :wireframe true}))]
+                      #(js/THREE.MeshLambertMaterial. (js-obj "color" 0x008800
+                                                              "wireframe" true))]
             :portal [#(js/THREE.SphereGeometry. 3)
-                     #(js/THREE.MeshPhongMaterial. (clj->js {:color 0x004444
-                                                             :wireframe true}))]
+                     #(js/THREE.MeshLambertMaterial. (js-obj "color" 0x000088
+                                                             "wireframe" true))]
             :landmark [#(js/THREE.CubeGeometry. 3 3 3)
-                       #(js/THREE.MeshPhongMaterial. (clj->js {:color 0x112233}))]})
+                       #(js/THREE.MeshLambertMaterial. (js-obj "color" 0x880000))]})
 
 (defn create
   [t]

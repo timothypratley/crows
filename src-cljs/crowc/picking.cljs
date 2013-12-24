@@ -1,7 +1,7 @@
 (ns crowc.picking)
 
 
-(let [over-material (js/THREE.MeshLambertMaterial. (clj->js {:color 0xFF0000}))]
+(let [over-material (js/THREE.MeshLambertMaterial. (js-obj "color" 0xFF0000))]
   (defn emphasize [obj]
     (aset obj "materialBackup" (aget obj "material"))
     (aset obj "material" over-material)
@@ -21,17 +21,17 @@
           direction (.normalize (.sub v from))
           ray (js/THREE.Raycaster. from direction)
           intersects (when scene
-                       (.intersectObjects ray scene))]
+                       (.intersectObject ray scene true))]
       (if (seq intersects)
         (let [new-intersect (aget (first intersects) "object")]
           (when (not= @intersected new-intersect)
             (when @intersected
-              (restore intersected))
+              (restore @intersected))
             (reset! intersected new-intersect)
             (emphasize @intersected)
             [:picked @intersected]))
         (when @intersected
-          (restore intersected)
+          (restore @intersected)
           (reset! intersected nil)
           [:unpicked]))))
 

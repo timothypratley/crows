@@ -1,6 +1,5 @@
-(ns crowc.wamp-client
+(ns crowc.wamp
   (:require [crowc.websocket :as websocket]
-            [clojure.string :as string :refer [trim blank?]]
             [goog.crypt :as crypt]
             [goog.crypt.Hmac :as hmac]
             [goog.crypt.Sha256 :as sha256]

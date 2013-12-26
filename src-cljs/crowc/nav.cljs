@@ -70,12 +70,12 @@
       acc))
 
   (defn- input
-    [canvas t zoom]
+    [canvas t]
     (mouse-action canvas
      (reduce (partial key-action t) effect @keys-pressed)))
 
-  (defn update [canvas obj scene t zoom]
-    (let [{:keys [speed forward right rise pitch yaw roll]} (input canvas t zoom)
+  (defn update [canvas obj scene t]
+    (let [{:keys [speed forward right rise pitch yaw roll]} (input canvas t)
           v (.normalize (js/THREE.Vector3. right forward rise))]
       (.multiply (.-quaternion obj)
                  (.normalize (js/THREE.Quaternion. pitch yaw roll)))

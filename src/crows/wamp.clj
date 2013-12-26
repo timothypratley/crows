@@ -1,8 +1,7 @@
 (ns crows.wamp
-  (:require [org.httpkit.server :as http-kit]
-            [clj-wamp.server :as wamp]
-            [taoensso.timbre :as timbre
-             :refer [log  trace  debug  info  warn  error  fatal  report spy]]))
+  (:require [crows.world :refer [update-player-command]]
+            [clj-wamp.server]
+            [taoensso.timbre :refer [log  trace  debug  info  warn  error  fatal  report spy]]))
 
 
 ;; Topic BaseUrls
@@ -35,20 +34,22 @@
 (defn- auth-permissions
   "Returns the permissions for a client session by auth key."
   [sess-id auth-key]
-  {:rpc       {(rpc-url "echo")  true
-               (rpc-url "ping")  false
-               (rpc-url "throw") true}
+  {:rpc       {(rpc-url "update")  true}
    :subscribe {(evt-url "chat")  true}
    :publish   {(evt-url "chat")  true}})
+
+(defn- username []
+  (get-in @clj-wamp.server/client-auth [clj-wamp.server/*call-sess-id* :key]))
 
 (defn wamp-handler
   "Returns a http-kit websocket handler with wamp subprotocol"
   [req]
-  (wamp/with-channel-validation req channel #"https?://localhost:8080"
-    (wamp/http-kit-handler channel
+  (clj-wamp.server/with-channel-validation req channel #"https?://localhost:8080"
+    (clj-wamp.server/http-kit-handler channel
       {:on-open        on-open
        :on-close       on-close
-       :on-call        {(rpc-url "echo")  identity
+       :on-call        {(rpc-url "update") (fn wamp-update [a b]
+                                             (update-player-command (username) a b))
                         (rpc-url "ping")  (fn [] "pong")
                         (rpc-url "throw") (fn [] (throw (Exception. "An exception")))
                         :on-before        on-before-call}

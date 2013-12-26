@@ -2,7 +2,8 @@
   (:require [domina]
             [domina.events :refer [listen!]]
             [crowc.nav :as nav]
-            [crowc.audio :as audio]))
+            [crowc.audio :as audio]
+            [crowc.connection :as connection]))
 
 
 (defn create [canvas scene]
@@ -30,7 +31,8 @@
 
       ((fn render-callback []
          (let [t (min 1.0 (.getDelta clock))]
-           (audio/update (nav/update canvas camera scene t zoom)))
+           (audio/update (nav/update canvas camera scene t)))
          (.render renderer scene camera)
+         (connection/update (.toArray (.-position camera)) (.toArray (.-quaternion camera)))
          (js/requestAnimationFrame render-callback)))
       renderer)))

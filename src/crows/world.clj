@@ -1,91 +1,55 @@
-(ns crows.world
-  (:require [[clojure.core.matrix :refer :all]]))
+(ns crows.world)
 
+
+(def terrains [:earth :water :road :forrest :dessert :grass])
 
 (def world
   "The domain, the state of everything."
-  (atom nil))
+  (atom {:players {}
+         :x [0 :terrain :earth []]}))
 
-(defn update-drone-command
-  [drone-id location heading]
-  (raise! :drone-update
-          {:drone-id drone-id
-           :heading heading
-           :location location}))
 
-(defmethod accept :drone-update
-  [world {:keys [drone-id location heading]}]
-  (update-in world [:drones drone-id]
+(defmulti accept (fn [world event] (:event event)))
+
+(let [o (Object.)
+      event-count (atom 0)]
+  (defn raise!
+    "Raising an event stores it, publishes it, and updates the world model.
+    Publishing allows for external read models to be denormalized, providing CQRS.
+    http://martinfowler.com/bliki/CQRS.html"
+    [event-type event]
+    (locking o
+      (let [event (assoc event
+                    :event event-type
+                    :when (java.util.Date.)
+                    :seq (swap! event-count inc))]
+        ;(store event)
+        ;(publish event)
+        (swap! world accept event)))))
+
+
+
+(defn rand-terrain
+  [x]
+  (assoc x 3
+         (vec (repeatedly 64 (fn []
+                               [(rand) :terrain (rand-nth terrains)])))))
+
+(reduce (fn [acc x]
+          (update-in acc [3 x] rand-terrain))
+        (rand-terrain @world) (range 64))
+
+(defn update-player-command
+  [id location heading]
+  (println "PLAYER" id)
+  (raise! :player-update
+          {:id id
+           :location location
+           :heading heading}))
+
+(defmethod accept :player-update
+  [world {:keys [id location heading]}]
+  (update-in world [:players id]
              #(-> %
                (assoc :location location)
                (assoc :heading heading))))
-
-
-
-(defn can-complete-mission
-  [drone]
-  (and (drone :cargo)
-       (= (drone :location)
-          (go-to @world drone))))
-
-(defn complete-mission-command
-  [drone]
-  (if (can-complete-mission drone)
-    (raise! :mission-complete
-            {:drone-id (drone :id)})))
-
-(defmethod accept :mission-complete
-  [world e]
-  (-> world
-      (update-in [:missions] disj (get-in world [:drone (e :drone-id) :mission]))
-      (update-in [:drones (e :drone-id)] dissoc :mission :cargo)))
-
-
-
-; TODO: using @world is cheezy
-(defn can-pickup
-  [drone]
-  (and (not (drone :cargo))
-       (if (medicine (get-in drone [:mission :cargo]))
-         (some #(= (drone :location) %)
-               (map :location (@world :hospitals)))
-         (= (drone :location)
-            (get-in drone [:mission :remote :location])))))
-
-(defn pickup-command
-  [drone]
-  (if (can-pickup drone)
-    (raise! :pickup
-            {:drone-id (drone :id)})))
-
-;TODO: flag the cargo as taken in the mission??
-(defmethod accept :pickup
-  [world e]
-  (assoc-in world [:drones (e :drone-id) :cargo]
-            (get-in world [:drones (e :drone-id) :mission :cargo])))
-
-
-
-(defn assign-mission-command
-  [drone mission]
-  (raise! :mission-assigned
-          {:drone-id (drone :id)
-           :mission mission}))
-
-(defmethod accept :mission-assigned
-  [world e]
-  (assoc-in world [:drones (e :drone-id) :mission]
-            (e :mission)))
-
-
-
-(defn create-mission-command
-  [mission]
-  (raise! :mission-created
-          {:mission mission}))
-
-(defmethod accept :mission-created
-  [world e]
-  (update-in world [:missions]
-             (fnil conj #{}) (e :mission)))
-

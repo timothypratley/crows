@@ -1,12 +1,12 @@
 (ns crowc.nav
-  (:require-macros [cljs.core.async.macros :refer [go]])
-  (:require [cljs.core.async :refer [>! <! chan put! close! timeout]]
+  (:require [cljs.core.async :refer [put!]]
             [domina.events :refer [listen!]]
             [crowc.picking :as picking]))
 
 
 (let [movement-speed 1.0
       look-speed 1.0
+      heading-prev (atom nil)
       mouse (atom nil)
       mouse-prev (atom nil)
       mouse-button-pressed (atom false)
@@ -74,27 +74,48 @@
     (mouse-action canvas
      (reduce (partial key-action t) effect @keys-pressed)))
 
-  (defn update [canvas obj scene t]
-    (let [{:keys [speed forward right rise pitch yaw roll]} (input canvas t)
-          v (.normalize (js/THREE.Vector3. right forward rise))]
-      (.multiply (.-quaternion obj)
-                 (.normalize (js/THREE.Quaternion. pitch yaw roll)))
-      (.translateOnAxis obj
-                        v
-                        (* t speed movement-speed)))
-    (.setPosition (.-matrix obj)
-                  (.-position obj))
-    (.makeRotationFromQuaternion (.-matrix obj)
-                                  (.-quaternion obj))
-    (set! (.-matrixWorldNeedsUpdate obj) true)
+  (defn- process-input
+    "Returns the movement of obj in response to user inputs, or nil if none occurred"
+    [canvas obj t]
+    (let [{:keys [speed forward right rise pitch yaw roll]} (input canvas t)]
+      (when (or (some (complement zero?) [speed forward right rise])
+                (nil? @heading-prev)
+                (not= [pitch yaw roll] @heading-prev))
+        (reset! heading-prev [pitch yaw roll])
+        (.multiply (.-quaternion obj)
+                   (.normalize (js/THREE.Quaternion. pitch yaw roll)))
+        (.translateOnAxis obj
+                          (.normalize (js/THREE.Vector3. right forward rise))
+                          (* t speed movement-speed))
+        (.setPosition (.-matrix obj)
+                      (.-position obj))
+        (.makeRotationFromQuaternion (.-matrix obj)
+                                     (.-quaternion obj))
+        (set! (.-matrixWorldNeedsUpdate obj) true)
+        [(.toArray (.-position obj)) (.toArray (.-quaternion obj))])))
+
+  (defn- process-picking
+    "Returns picking event if the mouse interacts with the scene, or nil"
+    [canvas obj scene intersected]
     (when @mouse
       (reset! mouse-prev @mouse)
       (picking/pick obj scene
                     (dec (/ (:clientX @mouse) (.-clientWidth canvas) 0.5))
-                    (inc (- (/ (:clientY @mouse) (.-clientHeight canvas) 0.5))))))
+                    (inc (- (/ (:clientY @mouse) (.-clientHeight canvas) 0.5)))
+                    intersected)))
+
+  (defn update
+    "Returns a vector of the results of movement and picking over time t
+    where obj is controlled by user input (usually this will be the camera)"
+    [canvas obj camera scene t intersected]
+    [(process-input canvas obj t)
+     (process-picking canvas camera scene intersected)])
 
   (defn attach
-    [canvas]
+    [canvas intersected selected]
+    (listen! js/document :mouseup
+             (fn on-mouse-up [e]
+               (reset! mouse-button-pressed false)))
     (doto canvas
       (listen! :keydown
                (fn on-key-down [e]
@@ -110,17 +131,15 @@
                (fn on-mouse-down [e]
                  (reset! mouse-button-pressed true)
                  (domina.events/prevent-default e)
-                 (picking/select)))
-      (listen! :mouseup
-               (fn on-mouse-up [e]
-                 (reset! mouse-button-pressed false)))
+                 (picking/select intersected selected)))
       (listen! :mouseover
                (fn on-mouse-over [e]
                  (.focus canvas)))
-      (listen! :mouseout
-               (fn on-mouse-out [e]
-                 ;(reset! mouse-button-pressed false)
-                 (reset! keys-pressed #{})))
+      (listen! :blur
+               (fn on-blur [e]
+                 (.log js/console "onblur")
+                 (reset! keys-pressed #{})
+                 (reset! mouse-button-pressed false)))
       (listen! :contextmenu
                (fn on-context-menu [e]
                  (domina.events/prevent-default e)

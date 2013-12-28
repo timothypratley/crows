@@ -14,25 +14,31 @@
           fov 35
           near 0.1
           far 10000
-          camera (js/THREE.PerspectiveCamera. fov (/ (.-innerWidth js/window) (.-innerHeight js/window)) near far)
+          camera (js/THREE.PerspectiveCamera. fov (/ canvas/offsetWidth canvas/offsetHeight) near far)
+          intersected (atom nil)
+          selected (atom nil)
           resize (fn on-window-resize []
                    (let [width canvas/offsetWidth
                          height canvas/offsetHeight]
                      (.setSize renderer width height)
                      (set! (.-aspect camera) (/ width height))
-                     (set! (.-radius camera) (/ (+ width height) 4))
                      (.updateProjectionMatrix camera)))]
       (listen! js/window :resize resize)
-      (resize)
+      (resize) ; set to the current canvas size immeadiately, as initial values
 
       (set! (.-z (.-position camera))  10)
-      (nav/attach canvas)
+      (nav/attach canvas intersected selected)
       (.focus canvas)
 
       ((fn render-callback []
-         (let [t (min 1.0 (.getDelta clock))]
-           (audio/update (nav/update canvas camera scene t)))
+         (let [t (min 1.0 (.getDelta clock))
+               [[position heading :as movement]
+                pick-event] (nav/update canvas camera camera scene t intersected)]
+           (when movement
+             ;; TODO: there should only be one connection, pass it in
+             (connection/update position heading))
+           (when pick-event
+             (audio/update pick-event)))
          (.render renderer scene camera)
-         (connection/update (.toArray (.-position camera)) (.toArray (.-quaternion camera)))
          (js/requestAnimationFrame render-callback)))
       renderer)))

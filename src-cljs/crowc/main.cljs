@@ -8,9 +8,9 @@
 
 
 (defn init []
-  (let [canvas (domina/by-id "render-canvas")]
-    (when (render/create canvas world/scene)
-      (connection/connect "ws://localhost:8080/wamp")
+  (let [canvas (domina/by-id "render-canvas")
+        conn (connection/connect "ws://localhost:8080/wamp")]
+    (when (render/create canvas world/scene conn)
       (world/create-child world/scene 51 1 :terrain)
       (world/create-child world/scene 44 1 :portal)
       (world/create-child world/scene 77 2 :landmark))))

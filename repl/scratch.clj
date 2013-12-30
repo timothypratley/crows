@@ -1,6 +1,6 @@
-(ns crows.scratch)
+(ns crows.scratch
+  (:require [crows.handler :refer [app]]
+            [org.httpkit.server :refer [run-server]]))
 
 
-(if-let [[a b c] nil]
-  a
-  1)
+(run-server app {:port 8080})

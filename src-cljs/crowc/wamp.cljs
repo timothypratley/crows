@@ -82,7 +82,7 @@
       (.log js/console "Unknown message" data))))
 
 (defn wamp-handler
-  [uri & [{:keys [on-open on-close on-event
+  [uri & [{:keys [on-open on-close on-event on-error
                   reconnect? next-reconnect]
            :or {reconnect? true}}]]
   (websocket/connect! uri
@@ -91,6 +91,7 @@
      :on-message (fn [ws data]
                    (on-message ws data on-open on-event))
      :on-close on-close
+     :on-error on-error
      :protocol "wamp"}))
 
 ;; CR-Authentication

@@ -59,7 +59,7 @@
 
   (defn- mouse-action
     [canvas acc]
-    (if (and @mouse-prev @mouse-button-pressed)
+    (if (and @mouse-prev @mouse-button-pressed (not= 0 @mouse-button-pressed))
       (-> acc
           (update-in [:yaw] +
                      (/ (- (:clientX @mouse-prev) (:clientX @mouse))
@@ -129,9 +129,8 @@
                  (reset! mouse e)))
       (listen! :mousedown
                (fn on-mouse-down [e]
-                 (reset! mouse-button-pressed true)
-                 (domina.events/prevent-default e)
-                 (picking/select intersected selected)))
+                 (reset! mouse-button-pressed (:button e))
+                 (domina.events/prevent-default e)))
       (listen! :mouseover
                (fn on-mouse-over [e]
                  (.focus canvas)))

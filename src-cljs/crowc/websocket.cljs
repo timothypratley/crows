@@ -15,9 +15,9 @@
     (when on-message
       (events/listen ws et/MESSAGE #(on-message ws (.-message %))))
     (when on-error
-      (events/listen ws et/ERROR on-error))
+      (events/listen ws et/ERROR #(on-error ws %)))
     (when on-close
-      (events/listen ws et/CLOSED #(on-close)))
+      (events/listen ws et/CLOSED #(on-close ws)))
     ; Connect to websocket server
     (.log js/console (str "OPEN " uri))
     (.open ws uri protocol)

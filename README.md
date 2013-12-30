@@ -1,13 +1,15 @@
 # crows
 
-A Clojure library designed to ... well, that part is up to you.
+Crows.
 
 ## Usage
 
-FIXME
+lein run
+
+To reload code while working, execute repl/scratch.clj
 
 ## License
 
-Copyright © 2013 FIXME
+Copyright © 2013 Timothy Pratley
 
 Distributed under the Eclipse Public License, the same as Clojure.

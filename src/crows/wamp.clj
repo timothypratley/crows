@@ -27,8 +27,9 @@
   (info "WAMP call:" sess-id topic call-id call-params)
   [sess-id topic call-id call-params])
 
-(defn- auth-secret [sess-id auth-key extra]
+(defn- auth-secret
   "Returns the auth key's secret (ie. password), typically retrieved from a database."
+  [sess-id auth-key extra]
   "secret-password")
 
 (defn- auth-permissions
@@ -36,10 +37,11 @@
   [sess-id auth-key]
   {:rpc       {(rpc-url "update")  true}
    :subscribe {(evt-url "chat")  true}
-   :publish   {(evt-url "chat")  true}})
+   :publish   {(evt-url "chat")  true
+               (evt-url "update") true}})
 
-(defn- username []
-  (get-in @clj-wamp.server/client-auth [clj-wamp.server/*call-sess-id* :key]))
+(defn- username [sess-id]
+  (get-in @clj-wamp.server/client-auth [sess-id :key]))
 
 (defn wamp-handler
   "Returns a http-kit websocket handler with wamp subprotocol"
@@ -48,14 +50,14 @@
     (clj-wamp.server/http-kit-handler channel
       {:on-open        on-open
        :on-close       on-close
-       :on-call        {(rpc-url "update") (fn wamp-update [a b]
-                                             (update-player-command (username) a b))
+       :on-call        {(rpc-url "update") (fn wamp-update [sess-id [position heading]]
+                                             (update-player-command (username sess-id) position heading))
                         (rpc-url "ping")  (fn [] "pong")
-                        (rpc-url "throw") (fn [] (throw (Exception. "An exception")))
                         :on-before        on-before-call}
        :on-subscribe   {(evt-url "chat")  true}
        :on-publish     {(evt-url "chat")  true
+                        (evt-url "update") (fn update-player [sess-id topic [position heading] exclude eligible]
+                                             (update-player-command (username sess-id) position heading))
                         :on-after         on-publish}
        :on-auth        {:secret           auth-secret
                         :permissions      auth-permissions}})))
-

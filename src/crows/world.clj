@@ -9,7 +9,7 @@
          :x [0 :terrain :earth []]}))
 
 
-(defmulti accept (fn [world event] (:event event)))
+(defmulti accept (fn [_ event] (:event event)))
 
 (let [o (Object.)
       event-count (atom 0)]
@@ -41,11 +41,11 @@
 
 (defn update-player-command
   [id location heading]
-  (println "PLAYER" id)
-  (raise! :player-update
-          {:id id
-           :location location
-           :heading heading}))
+  (when id
+    (raise! :player-update
+            {:id id
+             :location location
+             :heading heading})))
 
 (defmethod accept :player-update
   [world {:keys [id location heading]}]

@@ -20,4 +20,6 @@
   :hooks [leiningen.cljsbuild]
   :plugins [[lein-ring "0.8.2"]
             [lein-cljsbuild "0.3.0"]
-            [lein-ancient "0.5.4"]])
+            [lein-ancient "0.5.4"]
+            [jonase/eastwood "0.0.2"]
+            [lein-kibit "0.0.8"]])

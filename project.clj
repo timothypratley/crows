@@ -13,6 +13,12 @@
                  [http-kit "2.1.13"]
                  [clj-wamp "1.0.0"]
                  [com.taoensso/timbre "3.0.0-RC2"]]
+  :profiles {:dev {:source-paths ["dev"]
+                   :dependencies [[org.clojure/tools.namespace "0.2.4"]
+                                  [gntp "0.6.0"]
+                                  [lein-kibit "0.0.8"]
+                                  [jonase/eastwood "0.0.2"]
+                                  [lein-bikeshed "0.1.3"]]}}
   :source-paths ["src"]
   :cljsbuild {:builds [{:source-paths ["src-cljs"]
                         :compiler {:output-to "resources/public/js/main.js"

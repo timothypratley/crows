@@ -1,13 +1,13 @@
 (ns crows.dev
   (:require [crows.main :refer [new-system start stop]]
+            [cljs.closure :as cljsc]
             [clojure.tools.namespace.track]
             [clojure.tools.namespace.repl]
             [gntp :refer [make-growler]]
-            [clojure.java.io :refer [input-stream]]
-            [org.httpkit.server :refer [run-server]]))
+            [clojure.java.io :refer [as-url input-stream]]))
 
 
-(def system nil)
+(defonce system nil)
 
 (defn start-new []
   {:pre [(nil? system)]}
@@ -22,18 +22,22 @@
   (clojure.tools.namespace.repl/refresh :after 'crows.dev/start-new)
   :ok)
 
-;(reset)
 
-(def growler (make-growler "Clojure"
+(def growler (make-growler "Crows"
                            ;http://clojure.org/space/showimage/clojure-icon.gif
                            :icon (input-stream "resources/public/img/favicon.ico")))
+
 (def notifiers
-  (growler :success {:icon (input-stream "http://icons.iconarchive.com/icons/gakuseisean/ivista-2/128/Alarm-Tick-icon.png")}
-           :failure {:icon (input-stream "http://icons.iconarchive.com/icons/oxygen-icons.org/oxygen/128/Actions-window-close-icon.png")}))
+  (growler :success {:icon (as-url "http://icons.iconarchive.com/icons/gakuseisean/ivista-2/128/Alarm-Tick-icon.png")}
+           :failure {:icon (as-url "http://icons.iconarchive.com/icons/oxygen-icons.org/oxygen/128/Actions-window-close-icon.png")}))
 
-;((:failure notifiers) "Failed")
-;((:success notifiers) "Success!" :text "The thing completed successfully")
+(def failure (:failure notifiers))
+(def success (:success notifiers))
 
-;TODO: look at the code for checkall
-;TODO: use hooke  https://github.com/marick/Midje/issues/221
-;TODO: I don't actually want to execute interactive code except in lighttable, bring back my repl directory (so it won't be loaded)??
+(defn build-cljs []
+  (try
+    (let [result (cljsc/build "src-cljs/crowc/main.cljs" {:output-to "resources/public/js/main.js"
+                                                          :cljs-source-map "resources/public/js/main.js.map"})]
+      (success "Success" :text "cljs build completed"))
+    (catch Exception e
+      (failure "Failed" :text (.getMessage e)))))

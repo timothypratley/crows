@@ -5,12 +5,13 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :main crows.main
   :dependencies [[org.clojure/clojure "1.5.1"]
+                 ; TODO: clojurescript and libs might be dev dependencies?
                  [org.clojure/clojurescript "0.0-2030"]
                  [org.clojure/core.async "0.1.267.0-0d7780-alpha"]
                  [domina "1.0.2"]
                  [ring "1.2.1"]
                  [compojure "1.1.6"]
-                 [http-kit "2.1.13"]
+                 [http-kit "2.1.14"]
                  [clj-wamp "1.0.0"]
                  [com.taoensso/timbre "3.0.0-RC2"]]
   :profiles {:dev {:source-paths ["dev"]

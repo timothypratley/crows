@@ -7,7 +7,9 @@
 (defn new-system
   "Returns a new instance of the whole application"
   []
-  {:config {:port 8080}})
+  {:config {:port 8080}
+   :world (new-world)
+   :publisher (new-publisher world)})
 
 (defn start
   [system]

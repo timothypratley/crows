@@ -24,8 +24,9 @@
                     :when (java.util.Date.)
                     :seq (swap! event-count inc))]
         ;(store event)
-        ;(publish event)
-        (swap! world accept event)))))
+        (publish event)
+        (swap! world accept event)
+        true))))
 
 
 
@@ -53,3 +54,17 @@
              #(-> %
                (assoc :location location)
                (assoc :heading heading))))
+
+(defn add-landmark-command
+  [player-id model-id location heading]
+  (raise! :add-landmark
+          {:model-id model-id
+           :location location
+           :heading heading}))
+
+(defmethod accept :add-landmark
+  [world {:keys [model-id location heading]}]
+  (assoc-in world [:landmarks id]
+            {:model-id model-id
+             :location location
+             :heading heading}))

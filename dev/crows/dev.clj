@@ -1,5 +1,5 @@
 (ns crows.dev
-  (:require [crows.main :refer [new-system start stop]]
+  (:require [crows.main]
             [cljs.closure :as cljsc]
             [clojure.tools.namespace.track]
             [clojure.tools.namespace.repl]
@@ -12,13 +12,15 @@
 (defn start-new []
   {:pre [(nil? system)]}
   (alter-var-root #'system (fn startit [s]
-                             (when s (stop s))
-                             (start (new-system)))))
+                             (when s (crows.main/stop s))
+                             (crows.main/start (crows.main/new-system)))))
 
-(defn reset []
+(defn stop []
   (alter-var-root #'system (fn stopit [s]
-                             (when s (stop s))
-                             nil))
+                             (when s (crows.main/stop s))
+                             nil)))
+(defn reset []
+  (stop)
   (clojure.tools.namespace.repl/refresh :after 'crows.dev/start-new)
   :ok)
 

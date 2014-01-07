@@ -63,10 +63,10 @@
       (-> acc
           (update-in [:yaw] +
                      (/ (- (:clientX @mouse-prev) (:clientX @mouse))
-                        canvas/offsetWidth 0.2))
+                        (.-offsetWidth canvas) 0.2))
           (update-in [:pitch] +
                      (/ (- (:clientY @mouse-prev) (:clientY @mouse))
-                        canvas/offsetWidth 0.2)))
+                        (.-offsetWidth canvas) 0.2)))
       acc))
 
   (defn- input

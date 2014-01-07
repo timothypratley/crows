@@ -11,12 +11,12 @@
     (on-receive channel (fn [data] ;; echo it back
                           (send! channel data)))))
 
-(defroutes app-routes
-  (GET "/" req "<p>Hello World</p>")
-  (GET "/ws" req (handler req))
-  (GET "/wamp" req (wamp-handler req))
-  (resources "/")
-  (not-found "Not Found"))
-
-(def app
-  (site app-routes))
+(defn app-routes
+  [system]
+  (site
+   (routes
+    (GET "/" req "<p>Hello World</p>")
+    (GET "/ws" req (handler req))
+    (GET "/wamp" req (wamp-handler system req))
+    (resources "/")
+    (not-found "Not Found"))))

@@ -20,7 +20,7 @@
 
 (defn- send!
   [ws msg]
-  (let [m (JSON/stringify (clj->js msg))]
+  (let [m (js/JSON.stringify (clj->js msg))]
     (websocket/send! ws m)))
 
 (defn prefix!
@@ -53,7 +53,7 @@
 
 (defn- on-message
   [ws data on-open on-event]
-  (let [msg (js->clj (JSON/parse data))]
+  (let [msg (js->clj (js/JSON.parse data))]
     ;(.log js/console "WAMP message" (pr-str msg))
     (condp = (first msg)
       WELCOME

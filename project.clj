@@ -15,7 +15,8 @@
                  [clj-wamp "1.0.0"]
                  [com.taoensso/timbre "3.0.0-RC2"]]
   :profiles {:dev {:source-paths ["dev"]
-                   :dependencies [[org.clojure/tools.namespace "0.2.4"]
+                   :dependencies [[ring-mock "0.1.5"]
+                                  [org.clojure/tools.namespace "0.2.4"]
                                   [gntp "0.6.0"]
                                   [lein-kibit "0.0.8"]
                                   [jonase/eastwood "0.0.2"]
@@ -23,6 +24,8 @@
   :source-paths ["src"]
   :cljsbuild {:builds [{:source-paths ["src-cljs"]
                         :compiler {:output-to "resources/public/js/main.js"
+                                   :optimizations :simple
+                                   :warnings true
                                    :cljs-source-map "resources/public/js/main.js.map"}}]}
   :hooks [leiningen.cljsbuild]
   :plugins [[lein-ring "0.8.2"]

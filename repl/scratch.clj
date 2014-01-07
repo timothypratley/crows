@@ -1,11 +1,14 @@
 (ns scratch
-  (:require [crows.dev :refer [reset success failure build-cljs]]
+  (:require [crows.dev :refer [reset stop success failure build-cljs]]
             [clojure.tools.namespace.track]
             [clojure.tools.namespace.repl]))
 
 
 (reset)
-
+(stop)
+(use 'crows.handler)
+(use 'ring.mock.request)
+((crows.handler/app-routes nil) (request :get "/"))
 (build-cljs)
 
 ;TODO: look at the code for checkall

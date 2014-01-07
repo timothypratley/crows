@@ -1,5 +1,8 @@
 (ns crows.main
-  (:require [crows.handler :refer [app]]
+  (:require [crows.handler :refer [app-routes]]
+            [crows.world :refer [new-world]]
+            [crows.publisher :refer [publish]]
+            [crows.storage :refer [store]]
             [org.httpkit.server :refer [run-server]]
             [taoensso.timbre :refer [log  trace  debug  info  warn  error  fatal  report spy]]))
 
@@ -7,13 +10,17 @@
 (defn new-system
   "Returns a new instance of the whole application"
   []
-  {:config {:port 8080}})
+  {:httpkit-config {:port 8080}
+   :world (atom (new-world))
+   :store store
+   :publish publish})
 
 (defn start
   [system]
   {:pre [(not (contains? system :stop))]}
   (info "Server starting")
-  (assoc system :stop (run-server app (system :config))))
+  (assoc system :stop
+    (run-server (app-routes system) (system :httpkit-config))))
 
 (defn stop
   [system]
@@ -21,6 +28,7 @@
   (info "Server stopping")
   ((system :stop))
   (dissoc system :stop))
+
 
 (defn -main
   [& args]

@@ -14,6 +14,7 @@
                                        (do
                                          (set! (.-authenticated ws) true)
                                          (.log js/console "Authenticated:" (pr-str result))
+                                         (subscribe! ws "crows/event#world")
                                          (subscribe! ws "crows/event#chat")
                                          (publish! ws "crows/event#chat" "Hi hi" "hi"))
                                        (.log js/console "Failed to authenticate")))))

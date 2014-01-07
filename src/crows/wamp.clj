@@ -36,7 +36,8 @@
   "Returns the permissions for a client session by auth key."
   [sess-id auth-key]
   {:rpc       {(rpc-url "update")  true}
-   :subscribe {(evt-url "chat")  true}
+   :subscribe {(evt-url "chat")  true
+               (evt-url "world") true}
    :publish   {(evt-url "chat")  true
                (evt-url "update") true}})
 
@@ -45,19 +46,24 @@
 
 (defn wamp-handler
   "Returns a http-kit websocket handler with wamp subprotocol"
-  [req]
+  [system req]
   (clj-wamp.server/with-channel-validation req channel #"https?://localhost:8080"
     (clj-wamp.server/http-kit-handler channel
       {:on-open        on-open
        :on-close       on-close
        :on-call        {(rpc-url "update") (fn wamp-update [sess-id [position heading]]
-                                             (update-player-command (username sess-id) position heading))
+                                             (update-player-command system
+                                                                    (username sess-id) position heading))
                         (rpc-url "ping")  (fn [] "pong")
                         :on-before        on-before-call}
-       :on-subscribe   {(evt-url "chat")  true}
+       :on-subscribe   {(evt-url "chat")  true
+                        (evt-url "world*") (fn subscribe-world [sess-id topic]
+                                              ;TODO: (unsub others)
+                                              true)}
        :on-publish     {(evt-url "chat")  true
                         (evt-url "update") (fn update-player [sess-id topic [position heading] exclude eligible]
-                                             (update-player-command (username sess-id) position heading))
+                                             (update-player-command system
+                                                                    (username sess-id) position heading))
                         :on-after         on-publish}
        :on-auth        {:secret           auth-secret
                         :permissions      auth-permissions}})))

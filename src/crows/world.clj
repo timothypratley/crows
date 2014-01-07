@@ -20,13 +20,19 @@
   {:players {}
    :x (rand-terrain [0 :terrain :earth []])})
 
+(let [max-id (atom 0)]
+  (defn next-id []
+    (swap! max-id inc)))
+
 (defn update-player-command
-  [system id location heading]
+  [system id location heading sess-id]
+    (println "SES" sess-id "ID" id)
   (when id
     (raise! system :player-update
             {:id id
              :location location
-             :heading heading})))
+             :heading heading}
+            sess-id)))
 
 (defmethod accept :player-update
   [world {:keys [id location heading]}]
@@ -44,7 +50,7 @@
 
 (defmethod accept :add-landmark
   [world {:keys [model-id location heading]}]
-  (assoc-in world [:landmarks id]
+  (assoc-in world [:landmarks (next-id)]
             {:model-id model-id
              :location location
              :heading heading}))

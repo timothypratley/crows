@@ -54,4 +54,3 @@
         (error "cljs build failed")))
     (catch Exception e
       (error (.toString e)))))
-(build-cljs)

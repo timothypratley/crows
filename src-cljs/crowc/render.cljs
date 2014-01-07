@@ -41,7 +41,7 @@
          (let [t (min 1.0 (.getDelta clock))
                [[position heading :as movement]
                 pick-event] (nav/update canvas camera camera scene t intersected)]
-           (when movement
+           (when (= 0 (rand-int 100)) ;movement
              (connection/update conn position heading))
            (when pick-event
              (audio/update pick-event)))

@@ -8,12 +8,12 @@
 
   (defn raise!
     "Raising an event stores it, publishes it, and updates the world model."
-    [system event-type event]
+    [system event-type event sess-id]
     (locking o
       (let [event (assoc event
                     :event event-type
                     :when (java.util.Date.)
                     :seq (swap! event-count inc))]
         ((system :store) event)
-        ((system :publish) event)
+        ((system :publish) event sess-id)
         (swap! (system :world) accept event)))))

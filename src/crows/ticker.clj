@@ -1,9 +1,7 @@
 (ns crows.ticker
-  (:require [wamp :refer [send-event!]]))
+  (:require [clj-wamp.server :refer [send-event!]]))
 
 
 (defn tick
   []
-
-
-  (send-event! topic event))
+  (send-event! "crows/event#world" "tick"))

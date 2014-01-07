@@ -1,5 +1,5 @@
 (ns scratch
-  (:require [crows.dev :refer [reset stop success failure build-cljs]]
+  (:require [crows.dev :refer [reset stop]]
             [clojure.tools.namespace.track]
             [clojure.tools.namespace.repl]))
 

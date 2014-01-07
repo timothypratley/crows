@@ -1,0 +1,16 @@
+#!/bin/bash
+
+while read line
+do
+  if [[ "$line" == *Exception* ]]
+  then
+    growlnotify.com /t:Error /n::error /a:Crows "$line"
+  elif [[ "$line" == *WARN* ]]
+  then
+    growlnotify.com /t:Warn /n::warn /a:Crows "$line"
+  elif [[ "$line" == *ompil* ]]
+  then
+    growlnotify.com /t:Info /n::info /a:Crows "$line"
+  fi
+  echo $line
+done

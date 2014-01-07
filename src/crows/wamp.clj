@@ -35,10 +35,10 @@
 (defn- auth-permissions
   "Returns the permissions for a client session by auth key."
   [sess-id auth-key]
-  {:rpc       {(rpc-url "update")  true}
+  {:rpc       {(rpc-url "update") true}
    :subscribe {(evt-url "chat")  true
                (evt-url "world") true}
-   :publish   {(evt-url "chat")  true
+   :publish   {(evt-url "chat")   true
                (evt-url "update") true}})
 
 (defn- username [sess-id]
@@ -51,7 +51,7 @@
     (clj-wamp.server/http-kit-handler channel
       {:on-open        on-open
        :on-close       on-close
-       :on-call        {(rpc-url "update") (fn wamp-update [sess-id [position heading]]
+       :on-call        {(rpc-url "update") (fn wamp-update
                                              (update-player-command system
                                                                     (username sess-id) position heading))
                         (rpc-url "ping")  (fn [] "pong")
@@ -61,7 +61,7 @@
                                               ;TODO: (unsub others)
                                               true)}
        :on-publish     {(evt-url "chat")  true
-                        (evt-url "update") (fn update-player [sess-id topic [position heading] exclude eligible]
+                        (evt-url "update") (fn update-player
                                              (update-player-command system
                                                                     (username sess-id) position heading))
                         :on-after         on-publish}

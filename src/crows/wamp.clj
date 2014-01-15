@@ -44,29 +44,29 @@
 (defn- username [sess-id]
   (get-in @clj-wamp.server/client-auth [sess-id :key]))
 
+(def cb-map
+  {:on-open        on-open
+   :on-close       on-close
+   :on-call        {(rpc-url "create") (fn wamp-update
+                                         [sess-id [position heading]]
+                                         (update-player-command (username sess-id) position heading))
+                    (rpc-url "ping")  (fn [] "pong")
+                    :on-before        on-before-call}
+   :on-subscribe   {(evt-url "chat")  true
+                    (evt-url "world*") (fn subscribe-world
+                                         [sess-id topic]
+                                         ;TODO: (unsub others)
+                                         true)}
+   :on-publish     {(evt-url "chat")  true
+                    (evt-url "update") (fn update-player
+                                         [sess-id topic [position heading] exclude eligible]
+                                         (update-player-command (username sess-id) position heading sess-id))
+                    :on-after         on-publish}
+   :on-auth        {:secret           auth-secret
+                    :permissions      auth-permissions}})
+
 (defn wamp-handler
   "Returns a http-kit websocket handler with wamp subprotocol"
-  [system req]
+  [req]
   (clj-wamp.server/with-channel-validation req channel #"https?://localhost:8080"
-    (clj-wamp.server/http-kit-handler channel
-      {:on-open        on-open
-       :on-close       on-close
-       :on-call        {(rpc-url "update") (fn wamp-update
-                                             [sess-id [position heading]]
-                                             (update-player-command system
-                                                                    (username sess-id) position heading))
-                        (rpc-url "ping")  (fn [] "pong")
-                        :on-before        on-before-call}
-       :on-subscribe   {(evt-url "chat")  true
-                        (evt-url "world*") (fn subscribe-world
-                                             [sess-id topic]
-                                              ;TODO: (unsub others)
-                                              true)}
-       :on-publish     {(evt-url "chat")  true
-                        (evt-url "update") (fn update-player
-                                             [sess-id topic [position heading] exclude eligible]
-                                             (update-player-command system
-                                                                    (username sess-id) position heading sess-id))
-                        :on-after         on-publish}
-       :on-auth        {:secret           auth-secret
-                        :permissions      auth-permissions}})))
+    (clj-wamp.server/http-kit-handler channel cb-map)))

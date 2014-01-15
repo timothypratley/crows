@@ -5,18 +5,12 @@
             [org.httpkit.server :refer :all]
             [crows.wamp :refer [wamp-handler]]))
 
-(defn handler [request]
-  (with-channel request channel
-    (on-close channel (fn [status] (println "channel closed: " status)))
-    (on-receive channel (fn [data] ;; echo it back
-                          (send! channel data)))))
 
 (defn app-routes
   [system]
   (site
    (routes
     (GET "/" req "<p>Hello World</p>")
-    (GET "/ws" req (handler req))
     (GET "/wamp" req (wamp-handler system req))
     (resources "/")
     (not-found "Not Found"))))

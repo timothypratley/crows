@@ -1,19 +1,25 @@
-(ns crows.eventing)
+(ns crows.eventing
+  (:require [crows.publisher :refer [publish]]
+            [crows.storage :refer [store]]))
 
 
-(defmulti accept (fn [world event] (:event event)))
+(defmulti accept (fn [domain event] (:event event)))
+
+; TODO: does this namespace own the domain? store/publish should be pluggable
+(def domain (atom {}))
 
 (let [o (Object.)
       event-count (atom 0)]
 
   (defn raise!
-    "Raising an event stores it, publishes it, and updates the world model."
-    [system event-type event sess-id]
+    "Raising an event stores it, publishes it, and updates the domain model."
+    [event-type event]
     (locking o
-      (let [event (assoc event
+      (let [before @domain
+            event (assoc event
                     :event event-type
                     :when (java.util.Date.)
-                    :seq (swap! event-count inc))]
-        ((system :store) event)
-        ((system :publish) event sess-id)
-        (swap! (system :world) accept event)))))
+                    :seq (swap! event-count inc))
+            after (swap! domain accept event)]
+        (store event after)
+        (publish event before after)))))

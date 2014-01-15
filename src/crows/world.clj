@@ -25,14 +25,12 @@
     (swap! max-id inc)))
 
 (defn update-player-command
-  [system id location heading sess-id]
-    (println "SES" sess-id "ID" id)
+  [id location heading]
   (when id
-    (raise! system :player-update
+    (raise! :player-update
             {:id id
              :location location
-             :heading heading}
-            sess-id)))
+             :heading heading})))
 
 (defmethod accept :player-update
   [world {:keys [id location heading]}]

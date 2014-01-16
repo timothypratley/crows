@@ -12,8 +12,9 @@
   []
   {:httpkit-config {:port 8080}
    :world (atom (new-world))
-   :store store
-   :publish publish})
+   ; dynamically resolving the var for development reloading
+   :store #'store
+   :publish #'publish})
 
 (defn start
   [system]
@@ -26,7 +27,7 @@
   [system]
   {:pre [(contains? system :stop)]}
   (info "Server stopping")
-  ((system :stop))
+  ((system :stop) :timeout 500)
   (dissoc system :stop))
 
 

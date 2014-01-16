@@ -1,5 +1,5 @@
 (ns crows.connection
-  (:require [crows.world :refer [update-player-command]]
+  (:require [crows.domain :refer [command domain]]
             [crows.publisher :refer [init]]
             [clj-wamp.server :refer [client-topics topic-unsubscribe with-channel-validation http-kit-handler]]
             [taoensso.timbre :refer [log  trace  debug  info  warn  error  fatal  report spy]]))
@@ -46,35 +46,29 @@
   (println "SUB" topic)
   #_(doseq [t (client-topics sess-id)]
     (topic-unsubscribe t sess-id))
-  (init @(system :world) topic sess-id))
-
-(defn- pub-pose
-  [system sess-id topic [position heading] exclude eligible]
-  (update-player-command system
-                         (username sess-id) position heading sess-id))
+  (init @domain topic sess-id))
 
 (defn- on-subscribe [system sess-id topic]
   (when (re-matches  #"crows/event#world.*"topic)
-    (subscribe-world system sess-id topic)))
+    (subscribe-world sess-id topic)))
 
-(defn new-event-map
-  [system]
-  {:on-open        (partial on-open system)
-   :on-close       (partial on-close system)
-   :on-call        {(rpc-url "ping")   (fn [] "pong")}
+(def callbacks
+  {:on-open        on-open
+   :on-close       on-close
+   :on-call        {(rpc-url "create-landscape") (fn call-create-landscape [sess-id position heading]
+                                                   (command "create-landscape" (username sess-id) position heading))}
    :on-subscribe   {(evt-url "chat")   true
                     (evt-url "world")  true
                     (evt-url "world*") true
-                    :on-after          (partial on-subscribe system)}
+                    :on-after          on-subscribe}
    :on-publish     {(evt-url "chat")   true
-                    (evt-url "pose")   (partial pub-pose system)}
+                    (evt-url "pose")   (fn call-pose [sess-id topic [position heading] exclude eligible]
+                                         (command "pose" (username sess-id) position heading))}
    :on-auth        {:secret            auth-secret
                     :permissions       auth-permissions}})
 
-(defn new-wamp-handler
-  "Returns a http-kit websocket handler with wamp subprotocol"
-  [system]
-  (let [event-map (new-event-map system)]
-    (fn wamp-handler [req]
-      (with-channel-validation req channel #"https?://localhost:8080"
-        (http-kit-handler channel event-map)))))
+(defn wamp-handler
+  "A http-kit websocket handler with wamp subprotocol"
+  [req]
+  (with-channel-validation req channel #"https?://localhost:8080"
+    (http-kit-handler channel callbacks)))

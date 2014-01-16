@@ -3,7 +3,8 @@
             [compojure.handler :refer [site api]]
             [compojure.route :refer [resources not-found]]
             [org.httpkit.server :refer :all]
-            [crows.wamp :refer [wamp-handler]]))
+            [crows.connection :refer [new-wamp-handler]]))
+
 
 (defn handler [request]
   (with-channel request channel
@@ -13,10 +14,11 @@
 
 (defn app-routes
   [system]
-  (site
-   (routes
-    (GET "/" req "<p>Hello World</p>")
-    (GET "/ws" req (handler req))
-    (GET "/wamp" req (wamp-handler system req))
-    (resources "/")
-    (not-found "Not Found"))))
+  (let [wamp-handler (new-wamp-handler system)]
+    (site
+     (routes
+      (GET "/" req "<p>Hello World</p>")
+      (GET "/ws" req (handler req))
+      (GET "/wamp" req (wamp-handler req))
+      (resources "/")
+      (not-found "Not Found")))))

@@ -1,11 +1,14 @@
 (ns scratch
-  (:require [crows.dev :refer [reset stop]]
+  (:require [crows.dev :refer [reset stop start-new]]
             [clojure.tools.namespace.track]
             [clojure.tools.namespace.repl]))
 
 
-(reset)
+(start-new)
 (stop)
+
+(reset)
+
 (use 'crows.handler)
 (use 'ring.mock.request)
 ((crows.handler/app-routes nil) (request :get "/"))

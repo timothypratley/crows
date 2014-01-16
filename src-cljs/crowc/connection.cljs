@@ -30,7 +30,7 @@
                              [ws topic event]
                              (.log js/console "EVENT " event))}))
 
-(defn update
+(defn pose
   [connection location heading]
   (when (.-authenticated connection)
-    (publish! connection "crows/event#update" [location heading])))
+    (publish! connection "crows/event#pose" [location heading])))

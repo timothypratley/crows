@@ -7,8 +7,7 @@
 (defn- rand-terrain
   [x]
   (assoc x 3
-         (vec (repeatedly 64 (fn []
-                               [(rand) :terrain (rand-nth terrains)])))))
+         (mapv vector (repeat :terrain) (repeatedly 64 #(rand-nth terrains)))))
 
 #_(reduce (fn [acc x]
           (update-in acc [3 x] rand-terrain))
@@ -17,8 +16,8 @@
 (defn new-world
   "The domain, the state of everything."
   []
-  {:players {}
-   :x (rand-terrain [0 :terrain :earth []])})
+  {:root (rand-terrain [:terrain :earth []])
+   :players {}})
 
 (let [max-id (atom 0)]
   (defn next-id []
@@ -26,7 +25,6 @@
 
 (defn update-player-command
   [system id location heading sess-id]
-    (println "SES" sess-id "ID" id)
   (when id
     (raise! system :player-update
             {:id id
@@ -42,8 +40,8 @@
                (assoc :heading heading))))
 
 (defn add-landmark-command
-  [player-id model-id location heading]
-  (raise! :add-landmark
+  [system player-id model-id location heading]
+  (raise! system :add-landmark
           {:model-id model-id
            :location location
            :heading heading}))

@@ -1,5 +1,4 @@
-(ns crows.world
-  (:require [crows.eventing :refer [accept raise!]]))
+(ns crows.world)
 
 
 (def terrains [:earth :water :road :forrest :dessert :grass])
@@ -17,38 +16,6 @@
 (defn new-world
   "The domain, the state of everything."
   []
-  {:players {}
+  {:next-id 1
+   :players {}
    :x (rand-terrain [0 :terrain :earth []])})
-
-(let [max-id (atom 0)]
-  (defn next-id []
-    (swap! max-id inc)))
-
-(defn update-player-command
-  [id location heading]
-  (when id
-    (raise! :player-update
-            {:id id
-             :location location
-             :heading heading})))
-
-(defmethod accept :player-update
-  [world {:keys [id location heading]}]
-  (update-in world [:players id]
-             #(-> %
-               (assoc :location location)
-               (assoc :heading heading))))
-
-(defn add-landmark-command
-  [player-id model-id location heading]
-  (raise! :add-landmark
-          {:model-id model-id
-           :location location
-           :heading heading}))
-
-(defmethod accept :add-landmark
-  [world {:keys [model-id location heading]}]
-  (assoc-in world [:landmarks (next-id)]
-            {:model-id model-id
-             :location location
-             :heading heading}))

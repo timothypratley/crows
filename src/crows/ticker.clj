@@ -1,7 +1,8 @@
-(ns crows.ticker
-  (:require [clj-wamp.server :refer [send-event!]]))
+(ns crows.ticker)
 
 
 (defn tick
-  []
-  (send-event! "crows/event#world" "tick"))
+  "Given the current state of the world, produces all the commands that should be executed by the server."
+  [world]
+
+  )

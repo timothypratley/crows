@@ -24,7 +24,8 @@
                          height (.-clientHeight canvas)]
                      (set! (.-aspect camera) (/ width height))
                      (.updateProjectionMatrix camera)
-                     (.setSize renderer width height)))]
+                     (.setSize renderer width height)
+                     (.render render scene camera)))]
       (listen! js/window :resize resize)
       (resize) ; set to the current canvas size immeadiately, as initial values
 

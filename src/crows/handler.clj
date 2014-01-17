@@ -7,8 +7,7 @@
 
 
 
-(defn app-routes
-  [system]
+(def app-routes
   (site
    (routes
     (GET "/" req "<p>Hello World</p>")

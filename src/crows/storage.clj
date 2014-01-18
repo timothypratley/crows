@@ -1,4 +1,4 @@
 (ns crows.storage)
 
 
-(defn store [event])
+(defn store [event domain])

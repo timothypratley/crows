@@ -1,4 +1,4 @@
-(ns crows.events
+(ns crows.actions
   (:require [crows.domain :refer [accept]]))
 
 

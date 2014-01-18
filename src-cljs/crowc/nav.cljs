@@ -78,7 +78,7 @@
     "Returns the movement of obj in response to user inputs, or nil if none occurred"
     [canvas obj t]
     (let [{:keys [speed forward right rise pitch yaw roll]} (input canvas t)]
-      (when (or (some (complement zero?) [speed forward right rise])
+      (when (or (some (complement zero?) [forward right rise])
                 (nil? @heading-prev)
                 (not= [pitch yaw roll] @heading-prev))
         (reset! heading-prev [pitch yaw roll])

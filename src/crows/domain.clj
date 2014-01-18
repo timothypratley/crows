@@ -3,9 +3,9 @@
 
 (defmulti accept (fn [domain event] (:event event)))
 
-(def domain (atom {}))
-(def publish (atom constantly))
-(def store (atom constantly))
+(defonce domain (atom {}))
+(defonce publish (atom (constantly true)))
+(defonce store (atom (constantly true)))
 
 (let [o (Object.)
       event-count (atom 0)]
@@ -24,12 +24,14 @@
         (event :seq)))))
 
 
-(def actions (atom {}))
+(defonce actions (atom {}))
 
 (defn functions
-  "Get the public functions of a namespace"
+  "Get the public functions of a namespace and create a map keyed off the name of the function"
   [name-space]
-  (into {} (filter ifn? (ns-publics name-space))))
+  (into {} (map (fn [[sym f]]
+                  [(name sym) f])
+                (filter ifn? (ns-publics name-space)))))
 
 (defn attach-actions
   "Attach actions to public functions in an event namespace"
@@ -45,7 +47,8 @@
   Returns the sequence id of the new domain if successful.
   An exception or nil indicates failure."
   [action-name & args]
-  (if-let [action (actions action-name)]
-    (when-let [event (apply action args)]
+  (if-let [action (@actions action-name)]
+    (when-let [event (apply action @domain args)]
       (raise! event))
-    (throw (str "Command " action-name "not found"))))
+    (throw (java.lang.IllegalArgumentException.
+            (str "Command " action-name " not found")))))

@@ -1,7 +1,7 @@
 (ns crows.connection
   (:require [crows.domain :refer [command domain]]
             [crows.publisher :refer [init]]
-            [clj-wamp.server :refer [client-topics topic-unsubscribe with-channel-validation http-kit-handler]]
+            [clj-wamp.server :refer :all]
             [taoensso.timbre :refer [log  trace  debug  info  warn  error  fatal  report spy]]))
 
 
@@ -15,11 +15,11 @@
 
 ;; HTTP Kit/WAMP WebSocket handler
 
-(defn- on-open [system sess-id]
+(defn- on-open [sess-id]
   (info "WAMP client connected [" sess-id "]")
-  (init system [0] sess-id))
+  (init @domain [0] sess-id))
 
-(defn- on-close [system sess-id status]
+(defn- on-close [sess-id status]
   (info "WAMP client disconnected [" sess-id "] " status))
 
 (defn- auth-secret
@@ -42,13 +42,13 @@
   (get-in @clj-wamp.server/client-auth [sess-id :key]))
 
 (defn- subscribe-world
-  [system sess-id topic]
+  [sess-id topic]
   (println "SUB" topic)
   #_(doseq [t (client-topics sess-id)]
     (topic-unsubscribe t sess-id))
   (init @domain topic sess-id))
 
-(defn- on-subscribe [system sess-id topic]
+(defn- on-subscribe [sess-id topic]
   (when (re-matches  #"crows/event#world.*"topic)
     (subscribe-world sess-id topic)))
 
@@ -56,14 +56,19 @@
   {:on-open        on-open
    :on-close       on-close
    :on-call        {(rpc-url "create-landscape") (fn call-create-landscape [sess-id position heading]
-                                                   (command "create-landscape" (username sess-id) position heading))}
+                                                     (command "create-landscape" (username sess-id) position heading))}
    :on-subscribe   {(evt-url "chat")   true
                     (evt-url "world")  true
                     (evt-url "world*") true
                     :on-after          on-subscribe}
    :on-publish     {(evt-url "chat")   true
                     (evt-url "pose")   (fn call-pose [sess-id topic [position heading] exclude eligible]
-                                         (command "pose" (username sess-id) position heading))}
+                                         (try
+                                           (command "pose" (username sess-id) position heading)
+                                           (catch Exception e
+                                             (warn (.getMessage e))
+                                             (emit-event! topic (.getMessage e) sess-id)
+                                             (close-channel sess-id))))}
    :on-auth        {:secret            auth-secret
                     :permissions       auth-permissions}})
 

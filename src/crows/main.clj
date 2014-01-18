@@ -4,6 +4,7 @@
             [crows.publisher :refer [publish]]
             [crows.storage :refer [store]]
             [crows.domain]
+            [crows.actions]
             [org.httpkit.server :refer [run-server]]
             [taoensso.timbre :refer [log  trace  debug  info  warn  error  fatal  report spy]]))
 
@@ -13,8 +14,9 @@
   []
   ;TODO: other storage related things to reset like seq
   (reset! crows.domain/domain (new-world))
-  (reset! crows.domain/publish publish)
-  (reset! crows.domain/store store)
+  (reset! crows.domain/publish #'publish)
+  (reset! crows.domain/store #'store)
+  (crows.domain/attach-actions 'crows.actions)
   {:httpkit-config {:port 8080}
    :world #'crows.domain/domain})
 

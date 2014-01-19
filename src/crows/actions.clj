@@ -11,8 +11,8 @@
      :heading heading}))
 
 (defmethod accept :pose
-  [world {:keys [id location heading]}]
-  (update-in world [:players id]
+  [world {:keys [username location heading]}]
+  (update-in world [:users username]
              (fn set-pose [player]
                (-> player
                    (assoc :location location)

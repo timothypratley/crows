@@ -1,5 +1,5 @@
 (ns crows.connection
-  (:require [crows.domain :refer [command domain]]
+  (:require [crows.domain :refer [command domain actions actions-by-name]]
             [crows.publisher :refer [init]]
             [clj-wamp.server :refer :all]
             [taoensso.timbre :refer [log  trace  debug  info  warn  error  fatal  report spy]]))
@@ -27,16 +27,6 @@
   [sess-id auth-key extra]
   "secret-password")
 
-(defn- auth-permissions
-  "Returns the permissions for a client session by auth key."
-  [sess-id auth-key]
-  {:rpc       {(rpc-url "ping")   true}
-   :subscribe {(evt-url "chat")   true
-               (evt-url "world")  true
-               (evt-url "world*") true}
-   :publish   {(evt-url "chat")   true
-               (evt-url "pose")   true}})
-
 (defn- username
   [sess-id]
   (get-in @clj-wamp.server/client-auth [sess-id :key]))
@@ -52,23 +42,40 @@
   (when (re-matches  #"crows/event#world.*"topic)
     (subscribe-world sess-id topic)))
 
+(defn- command-for
+  [action]
+  (fn call-command [sess-id topic args exclude eligible]
+    (try
+      (apply command action (username sess-id) args)
+      (catch Exception e
+        (warn (.getMessage e))
+        (close-channel sess-id)))))
+
+(defn- event-actions []
+  (into {}
+        (for [[action-name action] @actions-by-name]
+          [(evt-url action-name) (command-for action)])))
+
+(defn- auth-permissions
+  "Returns the permissions for a client session by auth key."
+  [sess-id auth-key]
+  {:rpc       {(rpc-url "ping")   true}
+   :subscribe {(evt-url "chat")   true
+               (evt-url "world")  true
+               (evt-url "world*") true}
+   :publish   {(evt-url "chat")   true
+               (evt-url "pose")   true}})
+
 (def callbacks
   {:on-open        on-open
    :on-close       on-close
-   :on-call        {(rpc-url "create-landscape") (fn call-create-landscape [sess-id position heading]
-                                                     (command "create-landscape" (username sess-id) position heading))}
+   :on-call        (event-actions)
    :on-subscribe   {(evt-url "chat")   true
                     (evt-url "world")  true
                     (evt-url "world*") true
                     :on-after          on-subscribe}
-   :on-publish     {(evt-url "chat")   true
-                    (evt-url "pose")   (fn call-pose [sess-id topic [position heading] exclude eligible]
-                                         (try
-                                           (command "pose" (username sess-id) position heading)
-                                           (catch Exception e
-                                             (warn (.getMessage e))
-                                             (emit-event! topic (.getMessage e) sess-id)
-                                             (close-channel sess-id))))}
+   :on-publish     (merge {(evt-url "chat")   true}
+                          (event-actions))
    :on-auth        {:secret            auth-secret
                     :permissions       auth-permissions}})
 

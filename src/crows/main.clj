@@ -5,6 +5,7 @@
             [crows.storage :refer [store]]
             [crows.domain]
             [crows.actions]
+            [crows.ticker :as ticker]
             [org.httpkit.server :refer [run-server]]
             [taoensso.timbre :refer [log  trace  debug  info  warn  error  fatal  report spy]]))
 
@@ -24,6 +25,7 @@
   [system]
   {:pre [(not (contains? system :stop))]}
   (info "Server starting")
+  (ticker/start)
   (assoc system :stop
     (run-server app-routes (system :httpkit-config))))
 
@@ -32,6 +34,7 @@
   {:pre [(contains? system :stop)]}
   (info "Server stopping")
   ((system :stop) :timeout 500)
+  (ticker/stop)
   (dissoc system :stop))
 
 

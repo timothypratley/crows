@@ -25,10 +25,19 @@
                      (set! (.-aspect camera) (/ width height))
                      (.updateProjectionMatrix camera)
                      (.setSize renderer width height)
-                     (.render renderer scene camera)))]
+                     (.render renderer scene camera)))
+          last-pose-at (atom (.getTime (js/Date.)))
+          last-pose (atom nil)
+          send-pose (fn send-pose [[position heading :as pose]]
+                      (when (not= pose @last-pose)
+                        (let [now (.getTime (js/Date.))]
+                          (when (> (- now @last-pose-at) 300)
+                            (connection/pose conn position heading)
+                            (reset! last-pose-at now)
+                            (reset! last-pose pose)
+                            (js/setTimeout send-pose 300)))))]
       (listen! js/window :resize resize)
-      (resize) ; set to the current canvas size immeadiately, as initial values
-
+      (resize)
       (set! (.-z (.-position camera))  10)
       (nav/attach canvas intersected selected)
       (.focus canvas)
@@ -40,11 +49,9 @@
 
       ((fn render-callback []
          (let [t (min 1.0 (.getDelta clock))
-               [[position heading :as movement]
-                pick-event] (nav/update canvas camera camera scene t intersected)]
-           (when movement
-             (.log js/console "MOVEMENT" movement)
-             (connection/pose conn position heading))
+               [pose pick-event] (nav/update canvas camera camera scene t intersected)]
+           (when pose
+             (send-pose pose))
            (when pick-event
              (audio/update pick-event)))
          (.render renderer scene camera)

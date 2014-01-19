@@ -24,7 +24,8 @@
         (event :seq)))))
 
 
-(defonce actions (atom {}))
+(defonce actions (atom #{}))
+(defonce actions-by-name (atom {}))
 
 (defn functions
   "Get the public functions of a namespace and create a map keyed off the name of the function"
@@ -36,16 +37,22 @@
 (defn attach-actions
   "Attach actions to public functions in an event namespace"
   [events-ns]
-  (reset! actions (functions events-ns)))
+  (reset! actions-by-name (functions events-ns))
+  (reset! actions (set (vals @actions-by-name))))
 
-; TODO: wamp is actually already mapping action names and destructuring args, so this creates more work?
-; the good thing is that raise! is not required in the action/event definitions
-; maybe what I need is a wamp that just has onpub onsub onrpc, so I can route them more dynamically
 (defn command
   "Calling a command is attempting to perform an action on the domain.
   Commands are invoked by an action name, as they are sent from a client.
   Returns the sequence id of the new domain if successful.
   An exception or nil indicates failure."
+  [action & args]
+  {:pre (@actions action)}
+  (when-let [event (apply action @domain args)]
+    (raise! event)))
+
+
+(defn command-by-name
+  "Call a command by string name."
   [action-name & args]
   (if-let [action (@actions action-name)]
     (when-let [event (apply action @domain args)]

@@ -1,12 +1,16 @@
 (ns crows.publisher
-  (:require [clj-wamp.server :refer [emit-event! broadcast-event! *call-sess-id*]]))
+  (:require [clj-wamp.server :refer [emit-event! broadcast-event! client-auth]]))
 
+
+(defn get-sess-id [username]
+  (for [[sess-id client] @client-auth
+        :when (= (client :key) username)]
+    sess-id))
 
 (defn publish [event before after]
   (broadcast-event! "crows/event#world"
                     event
-                    1
-                    #_exclude-sess-id))
+                    (get-sess-id (event :id))))
 
 (defn init [world path sess-id]
   (emit-event! (str "crows/event#world" path)

@@ -8,7 +8,7 @@
                 {:on-open (fn on-open
                             [ws sess-id]
                             (.log js/console "OPENED " sess-id)
-                            (auth! ws "guest" "secret-password"
+                            (auth! ws (str "guest" (js/Math.random)) "secret-password"
                                    (fn on-auth [_ success? result]
                                      (if success?
                                        (do

@@ -17,4 +17,4 @@
   []
   {:next-id 1
    :root (rand-terrain [:terrain :earth []])
-   :players {}})
+   :users {}})

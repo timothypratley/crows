@@ -8,9 +8,12 @@
     sess-id))
 
 (defn publish [event before after]
-  (broadcast-event! "crows/event#world"
-                    event
-                    (get-sess-id (event :id))))
+  (let [msg (if (= :pose (event :event))
+              [(event :id) (event :location) (event :heading)]
+              event)]
+    (broadcast-event! "crows/event#world"
+                      msg
+                      (get-sess-id (event :id)))))
 
 (defn init [world path sess-id]
   (emit-event! (str "crows/event#world" path)

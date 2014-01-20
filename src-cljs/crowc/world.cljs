@@ -16,6 +16,20 @@
             :landmark [#(js/THREE.CubeGeometry. 3 3 3)
                        #(js/THREE.MeshLambertMaterial. (js-obj "color" 0x880000))]})
 
+(def players (atom {}))
+
+(defn create-player [id]
+  (let [p (js/THREE.Mesh. (js/THREE.CubeGeometry. 1 1 1)
+                          (js/THREE.MeshLambertMaterial. (js-obj "color" 0xFF0000)))]
+    (.add scene p)
+    p))
+
+(defn spe [id [x y z] [a b c d]]
+  (let [p (or (@players id)
+              (swap! players assoc id (create-player id)))]
+    (set! (.-position p) (js/THREE.Vector3. x y z))
+    (set! (.-quaternion p) (js/THREE.Quaternion. a b c d))))
+
 (defn create
   [t]
   (let [[newgeo newmat] (types t)

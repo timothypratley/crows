@@ -28,10 +28,11 @@
                      (.render renderer scene camera)))
           last-pose-at (atom (.getTime (js/Date.)))
           last-pose (atom nil)
-          send-pose (fn send-pose [[position heading :as pose]]
+          send-pose (fn send-pose [pose]
                       (when (not= pose @last-pose)
-                        (let [now (.getTime (js/Date.))]
-                          (when (> (- now @last-pose-at) 300)
+                        (let [now (.getTime (js/Date.))
+                              [position heading] (or pose @last-pose)]
+                          (when (>= (- now @last-pose-at) 300)
                             (connection/pose conn position heading)
                             (reset! last-pose-at now)
                             (reset! last-pose pose)

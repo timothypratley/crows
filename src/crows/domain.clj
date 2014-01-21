@@ -46,7 +46,7 @@
   Returns the sequence id of the new domain if successful.
   An exception or nil indicates failure."
   [action & args]
-  {:pre (@actions action)}
+  {:pre [(@actions action)]}
   (when-let [event (apply action @domain args)]
     (raise! event)))
 

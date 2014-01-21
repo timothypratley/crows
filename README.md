@@ -18,3 +18,10 @@ Distributed under the Eclipse Public License, the same as Clojure.
 
 Stream a heirachical view of a world over wamp topics.
 Upon initial connection the current state is sent with a version number.
+
+## TODO
+* Refresh page when version mismatch
+* Send speed and interpolate between poses
+* Design the heirachicy rules
+* Model loading
+* Height(x,y) calculation

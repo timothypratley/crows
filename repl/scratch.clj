@@ -1,11 +1,18 @@
 (ns scratch
   (:require [crows.dev :refer [reset stop start-new]]
+            [crows.domain]
+            [crows.actions]
+            [crows.ticker]
             [clojure.tools.namespace.track]
             [clojure.tools.namespace.repl]))
 
 
 (start-new)
 (stop)
+(crows.domain/command #'crows.actions/create-mobile "raven" [0 0 0] [1 0 0 0])
+@crows.domain/actions
+(crows.ticker/start)
+(crows.ticker/stop)
 
 (reset)
 

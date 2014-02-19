@@ -53,4 +53,4 @@
         (info "cljs build completed")
         (error "cljs build failed")))
     (catch Exception e
-      (error (.toString e)))))
+      (error (str e)))))

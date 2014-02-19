@@ -13,7 +13,7 @@
 (defn tick
   "Given the current state of the world, produces all the commands that should be executed by the server."
   [world]
-  (for [[id mobile] (world :mobiles)]
+  (for [[id mobile] (world :actors)]
     (act id mobile)))
 
 (def running (atom false))

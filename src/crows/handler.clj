@@ -1,10 +1,9 @@
 (ns crows.handler
   (:require [compojure.core :refer :all]
-            [compojure.handler :refer [site api]]
+            [compojure.handler :refer [site]]
             [compojure.route :refer [resources not-found]]
             [ring.util.response :refer [redirect]]
             [ring.middleware.reload :refer [wrap-reload]]
-            [org.httpkit.server :refer :all]
             [crows.connection :refer [wamp-handler]]))
 
 

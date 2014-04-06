@@ -1,5 +1,5 @@
 (ns crows.main
-  (:require [crows.handler :refer [app-routes]]
+  (:require [crows.handler :refer [handler]]
             [crows.world :refer [new-world]]
             [crows.publisher :refer [publish]]
             [crows.storage :refer [store]]
@@ -7,7 +7,7 @@
             [crows.actions]
             [crows.ticker :as ticker]
             [org.httpkit.server :refer [run-server]]
-            [taoensso.timbre :refer [log  trace  debug  info  warn  error  fatal  report spy]]))
+            [taoensso.timbre :refer [info]]))
 
 
 (defn new-system
@@ -27,7 +27,7 @@
   (info "Server starting")
   (ticker/start)
   (assoc system :stop
-    (run-server app-routes (system :httpkit-config))))
+    (run-server handler (system :httpkit-config))))
 
 (defn stop
   [system]

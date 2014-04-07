@@ -7,6 +7,7 @@
             [crows.connection :refer [wamp-handler]]))
 
 
+
 (defroutes app-routes
   (GET "/" req (redirect "index.html"))
   (GET "/wamp" req (wamp-handler req))

@@ -16,7 +16,8 @@
           fov 35
           near 0.1
           far 10000
-          camera (js/THREE.PerspectiveCamera. fov (/ (.-offsetWidth canvas) (.-offsetHeight canvas)) near far)
+          aspect (/ (.-offsetWidth canvas) (.-offsetHeight canvas))
+          camera (js/THREE.PerspectiveCamera. fov aspect near far)
           intersected (atom nil)
           selected (atom nil)
           resize (fn on-window-resize []

@@ -1,4 +1,5 @@
-(ns crowc.world)
+(ns crowc.world
+  (:require [crowc.models :as models]))
 
 
 (def scene (doto (js/THREE.Scene.)
@@ -19,7 +20,7 @@
 (def players (atom {}))
 
 (defn create-player [id]
-  (let [p (js/THREE.Mesh. (js/THREE.CubeGeometry. 1 1 1)
+  (let [p (js/THREE.Mesh. (@models/models :raven)
                           (js/THREE.MeshLambertMaterial. (js-obj "color" 0xFF0000)))]
     (.add scene p)
     p))

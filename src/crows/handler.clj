@@ -12,7 +12,7 @@
   (GET "/" req (redirect "index.html"))
   (GET "/wamp" req (wamp-handler req))
   (resources "/")
-  (not-found "Not Found"))))
+  (not-found "Not Found"))
 
 (def handler
   (if :dev

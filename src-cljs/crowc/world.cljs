@@ -1,7 +1,6 @@
 (ns crowc.world
   (:require [crowc.models :as models]))
 
-
 (def scene (doto (js/THREE.Scene.)
              (.add (js/THREE.AmbientLight 0x888888))
              (.add (let [d (js/THREE.DirectionalLight. 0xffffff 0.5)]

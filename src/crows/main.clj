@@ -1,7 +1,7 @@
 (ns crows.main
   (:require [crows.handler :refer [handler]]
-            [crows.world :refer [new-world]]
-            [crows.publisher :refer [publish]]
+            [crows.connection :as connection]
+            [crows.world :as world]
             [crows.storage :refer [store]]
             [crows.domain]
             [crows.actions]
@@ -9,13 +9,12 @@
             [org.httpkit.server :refer [run-server]]
             [taoensso.timbre :refer [info]]))
 
-
 (defn new-system
   "Returns a new instance of the whole application"
   []
   ;TODO: other storage related things to reset like seq
-  (reset! crows.domain/domain (new-world))
-  (reset! crows.domain/publish #'publish)
+  (reset! crows.domain/domain (world/new-world))
+  (reset! crows.domain/publish #'connection/publish)
   (reset! crows.domain/store #'store)
   (crows.domain/attach-actions 'crows.actions)
   {:httpkit-config {:port 8080}
@@ -36,7 +35,6 @@
   ((system :stop) :timeout 500)
   (ticker/stop)
   (dissoc system :stop))
-
 
 (defn -main
   [& args]

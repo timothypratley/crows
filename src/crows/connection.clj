@@ -1,86 +1,91 @@
 (ns crows.connection
-  (:require [crows.domain :refer [command domain actions actions-by-name]]
-            [crows.publisher :refer [init]]
-            [clj-wamp.server :refer :all]
-            [taoensso.timbre :refer [log  trace  debug  info  warn  error  fatal  report spy]]))
+  (:require [crows.domain :refer [command domain actions-by-name]]
+            [taoensso.sente :as sente]
+            [taoensso.timbre :refer [log trace debug info warn error fatal report spy]]))
 
 
-;; Topic BaseUrls
-(def base-url "crows")
-(def rpc-base-url (str base-url "/rpc#"))
-(def evt-base-url (str base-url "/event#"))
+(let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn connected-uids]} (sente/make-channel-socket! {})]
+  (defonce ajax-post ajax-post-fn)
+  (defonce ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
+  (defonce recv ch-recv)
+  (defonce send! send-fn)
+  (defonce connected-uids connected-uids))
 
-(defn rpc-url [path] (str rpc-base-url path))
-(defn evt-url [path] (str evt-base-url path))
+(defn login! [ring-request]
+  (let [{:keys [session params]} ring-request
+        {:keys [user-id]} params]
+    (println "Login request: " params)
+    {:status 200 :session (assoc session :uid user-id)}))
 
-;; HTTP Kit/WAMP WebSocket handler
+(defn broadcast-event! [msg except]
+  (doseq [uid (:any @connected-uids)
+          :when (not= uid except)]
+    (send! uid msg)))
 
-(defn- on-open [sess-id]
-  (info "WAMP client connected [" sess-id "]")
-  (init @domain [0] sess-id))
+(defn publish [{:keys [event uid] :as event-data} before after]
+  (let [data (if (= :pose event)
+               (map event-data [:id :location :heading])
+               (dissoc event-data :event))]
+    (broadcast-event! [event data] uid)))
 
-(defn- on-close [sess-id status]
-  (info "WAMP client disconnected [" sess-id "] " status))
+(defn init [world path uid]
+  (send! uid [:crows/world path
+                       (get-in world [:root path])]))
 
-(defn- auth-secret
-  "Returns the auth key's secret (ie. password), typically retrieved from a database."
-  [sess-id auth-key extra]
-  "secret-password")
+(defn- on-open [uid]
+  (info "Client connected [" uid "]")
+  (init @domain [0] uid))
 
-(defn- username
-  [sess-id]
-  (get-in @clj-wamp.server/client-auth [sess-id :key]))
+(defn- on-close [uid status]
+  (info "Client disconnected [" uid "] " status))
 
 (defn- subscribe-world
-  [sess-id topic]
+  [uid topic]
   (println "SUB" topic)
-  #_(doseq [t (client-topics sess-id)]
-    (topic-unsubscribe t sess-id))
-  (init @domain topic sess-id))
+  #_(doseq [t (client-topics uid)]
+    (topic-unsubscribe t uid))
+  (init @domain topic uid))
 
-(defn- on-subscribe [sess-id topic]
+(defn- on-subscribe [uid topic]
   (when (re-matches  #"crows/event#world.*"topic)
-    (subscribe-world sess-id topic)))
+    (subscribe-world uid topic)))
 
-(defn- command-for
-  [action]
-  (fn call-command [sess-id topic args exclude eligible]
+(defn- event-action [uid action-name args]
+  (when-let [action (@actions-by-name action-name)]
     (try
-      (apply command action (username sess-id) args)
+      (apply command action uid args)
       (catch Exception e
         (warn (.getMessage e))
-        (close-channel sess-id)))))
+        (close-channel uid)))))
 
-(defn- event-actions []
-  (into {}
-        (for [[action-name action] @actions-by-name]
-          [(evt-url action-name) (command-for action)])))
+(defn- event-msg-handler
+  [{:keys [ring-req event]} _]
+  (let [session (:session ring-req)
+        uid (:uid session)
+        [id data :as ev] event]
 
-(defn- auth-permissions
-  "Returns the permissions for a client session by auth key."
-  [sess-id auth-key]
-  {:rpc       {(rpc-url "ping")   true}
-   :subscribe {(evt-url "chat")   true
-               (evt-url "world")  true
-               (evt-url "world*") true}
-   :publish   {(evt-url "chat")   true
-               (evt-url "pose")   true}})
+    (println "Event:" ev)
+    (match [id data]
+           [:chsk/ws-ping _]
+           :ignore
 
-(def callbacks
-  {:on-open        on-open
-   :on-close       on-close
-   :on-call        (event-actions)
-   :on-subscribe   {(evt-url "chat")   true
-                    (evt-url "world")  true
-                    (evt-url "world*") true
-                    :on-after          on-subscribe}
-   :on-publish     (merge {(evt-url "chat")   true}
-                          (event-actions))
-   :on-auth        {:secret            auth-secret
-                    :permissions       auth-permissions}})
+           [:crows/app-state app-state]
+           (if uid
+             (update uid app-state)
+             (println "Received app-state but no uid."))
 
-(defn wamp-handler
-  "A http-kit websocket handler with wamp subprotocol"
-  [req]
-  (with-channel-validation req channel #"https?://localhost:8080"
-    (http-kit-handler channel callbacks)))
+           [:crows/pose p]
+           (on-pose p)
+
+           [:chsk/uidport-open _]
+           (on-open uid)
+
+           [:chsk/uidport-close _]
+           (on-close uid nil)
+
+           :else
+           (or (event-action uid id data)
+               (println "Unmatched event:" ev)))))
+
+(defonce chsk-router
+  (sente/start-chsk-router-loop! #'event-msg-handler ch-chsk))

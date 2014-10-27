@@ -1,6 +1,5 @@
 (ns crowc.models)
 
-
 (def models (atom {}))
 
 (let [loader (js/THREE.JSONLoader.)]

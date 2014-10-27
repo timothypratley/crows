@@ -1,38 +1,63 @@
 (ns crowc.connection
-  (:require [crowc.wamp :refer [wamp-handler auth! subscribe! publish! rpc!]]
-            [crowc.world :refer [spe]]))
+  (:require [taoensso.encore :as encore :refer [logf]]
+              [taoensso.sente :as sente]
+              [crowc.world :refer [spe]]))
 
-(defn on-auth
-  [ws success? result]
-  (if success?
-    (do
-      (set! (.-authenticated ws) true)
-      (.log js/console "Authenticated:" (pr-str result))
-      (subscribe! ws "crows/event#world")
-      (subscribe! ws "crows/event#chat")
-      (publish! ws "crows/event#chat" "Hi hi" "hi"))
-    (.log js/console "Failed to authenticate")))
+(defn connect []
+  (let [{:keys [chsk ch-recv send-fn state]}
+        (sente/make-channel-socket! "/chsk" {:type :auto})]
+    (def chsk chsk)
+    (def ch-chsk ch-recv)
+    (def chsk-send! send-fn)
+    (def chsk-state state)))
 
-(defn on-event [ws topic event]
-  (.log js/console "EVENT " topic ": " (clj->js event))
-  (if (vector? event)
-    (apply spe event)))
+(def model (atom {}))
 
-(defn connect
-  [url]
-  (wamp-handler url
-                {:on-open (fn on-open [ws sess-id]
-                            (.log js/console "OPENED " sess-id)
-                            (auth! ws (str "guest" (js/Math.random)) "secret-password" on-auth))
-                 :on-close (fn on-close [ws]
-                             (set! (.-authenticated ws) false)
-                             (.log js/console "closed"))
-                 :on-error (fn on-error [ws]
-                             (set! (.-authenticated ws) false)
-                             (.log js/console "ERROR"))
-                 :on-event on-event}))
+(defn- event-handler [[id data :as ev] _]
+  (logf "Event: %s" ev)
+  (match [id data]
+         [:chsk/recv [:crows/model m]]
+         (reset! model m)
+
+         [:chsk/recv [:crows/patch p]]
+         (do
+           (logf "PATCH: %s" p)
+           #_(logf "M: %s" (apply hash-map (diff/patch {} p)))
+           #_(swap! model
+                    (fn [m p]
+                      (apply hash-map (diff/patch m p)))
+                    p)
+           #_(swap! model diff/patch p))
+
+         [:chsk/state {:first-open? true}]
+         (logf "Channel socket successfully established!")
+
+         [:chsk/state new-state]
+         (logf "Chsk state change: %s" new-state)
+
+         [:chsk/recv payload]
+         (logf "Push event from server: %s" payload)
+
+         :else
+         (logf "Unmatched event: %s" ev)))
+
+(defonce chsk-router
+  (sente/start-chsk-router-loop! event-handler ch-chsk))
+
+(defn send-app-state [m]
+  (chsk-send! [:crows/app-state m]))
+
+(defn login [user-id]
+  (logf "Logging in with user-id %s" user-id)
+  (encore/ajax-lite "/login"
+                    {:method :post
+                     :params {:user-id (str user-id)
+                              :csrf-token (:csrf-token @chsk-state)}}
+                    (fn [ajax-resp]
+                      (logf "Ajax login response: %s" ajax-resp)))
+  (sente/chsk-reconnect! chsk))
 
 (defn pose
-  [connection location heading]
+  [location heading]
   (when (.-authenticated connection)
-    (publish! connection "crows/event#pose" [location heading])))
+    (chsk-send! [:crows/pose location heading])))

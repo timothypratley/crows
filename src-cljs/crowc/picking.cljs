@@ -1,6 +1,5 @@
 (ns crowc.picking)
 
-
 (let [over-material (js/THREE.MeshLambertMaterial. (js-obj "color" 0xFF0000))]
   (defn emphasize [obj]
     (aset obj "materialBackup" (aget obj "material"))

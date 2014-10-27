@@ -6,7 +6,6 @@
             [crowc.connection :as connection]
             [crowc.picking :as picking]))
 
-
 (defn create
   [canvas scene conn]
   (if (not js/Detector.webgl)
@@ -34,7 +33,7 @@
                         (let [now (.getTime (js/Date.))
                               [position heading] (or pose @last-pose)]
                           (when (>= (- now @last-pose-at) 300)
-                            (connection/pose conn position heading)
+                            (connection/pose position heading)
                             (reset! last-pose-at now)
                             (reset! last-pose pose)
                             (js/setTimeout send-pose 300)))))]

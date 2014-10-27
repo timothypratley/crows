@@ -1,16 +1,16 @@
 (ns crows.handler
-  (:require [compojure.core :refer :all]
+  (:require [compojure.core :refer [GET POST]]
             [compojure.handler :refer [site]]
             [compojure.route :refer [resources not-found]]
             [ring.util.response :refer [redirect]]
             [ring.middleware.reload :refer [wrap-reload]]
-            [crows.connection :refer [wamp-handler]]))
-
-
+            [crows.connection]))
 
 (defroutes app-routes
   (GET "/" req (redirect "index.html"))
-  (GET "/wamp" req (wamp-handler req))
+  (GET  "/chsk" req (connection/ajax-get-or-ws-handshake req))
+  (POST "/chsk" req (connection/ajax-post req))
+  (POST "/login" req (connection/login! req))
   (resources "/")
   (not-found "Not Found"))
 

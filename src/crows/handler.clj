@@ -1,10 +1,10 @@
 (ns crows.handler
-  (:require [compojure.core :refer [GET POST]]
+  (:require [compojure.core :refer [defroutes GET POST]]
             [compojure.handler :refer [site]]
             [compojure.route :refer [resources not-found]]
             [ring.util.response :refer [redirect]]
             [ring.middleware.reload :refer [wrap-reload]]
-            [crows.connection]))
+            [crows.connection :as connection]))
 
 (defroutes app-routes
   (GET "/" req (redirect "index.html"))

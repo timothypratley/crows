@@ -1,15 +1,14 @@
 (ns crowc.main
-  #_(:require
-; [crowc.connection :as connection]
-                                        ;[crowc.render :as render]
-            ;[crowc.world :as world]
-            ;[crowc.nav :as nav]
-            ;[crowc.picking :as picking]
-            ;[domina]
-))
+  (:require
+   [crowc.connection :as connection]
+   [crowc.render :as render]
+   [crowc.world :as world]
+   [crowc.nav :as nav]
+   [crowc.picking :as picking]
+   [domina]))
 
 (defn init []
-  #_(let [canvas (domina/by-id "render-canvas")
+  (let [canvas (domina/by-id "render-canvas")
         conn (connection/connect)]
     (when (render/create canvas world/scene conn)
       (js/setTimeout (fn [] (world/create-player 1)) 200)

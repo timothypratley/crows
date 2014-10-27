@@ -1,8 +1,9 @@
 (ns crows.connection
-  (:require [crows.domain :refer [command domain actions-by-name]]
-            [taoensso.sente :as sente]
-            [taoensso.timbre :refer [log trace debug info warn error fatal report spy]]))
-
+  (:require
+   [clojure.core.match :refer [match]]
+   [crows.domain :refer [command domain actions-by-name]]
+   [taoensso.sente :as sente]
+   [taoensso.timbre :refer [debug info warn]]))
 
 (let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn connected-uids]} (sente/make-channel-socket! {})]
   (defonce ajax-post ajax-post-fn)
@@ -14,7 +15,7 @@
 (defn login! [ring-request]
   (let [{:keys [session params]} ring-request
         {:keys [user-id]} params]
-    (println "Login request: " params)
+    (info "Login request: " params)
     {:status 200 :session (assoc session :uid user-id)}))
 
 (defn broadcast-event! [msg except]
@@ -30,7 +31,7 @@
 
 (defn init [world path uid]
   (send! uid [:crows/world path
-                       (get-in world [:root path])]))
+              (get-in world [:root path])]))
 
 (defn- on-open [uid]
   (info "Client connected [" uid "]")
@@ -41,9 +42,9 @@
 
 (defn- subscribe-world
   [uid topic]
-  (println "SUB" topic)
+  (info "SUB" topic)
   #_(doseq [t (client-topics uid)]
-    (topic-unsubscribe t uid))
+      (topic-unsubscribe t uid))
   (init @domain topic uid))
 
 (defn- on-subscribe [uid topic]
@@ -55,8 +56,15 @@
     (try
       (apply command action uid args)
       (catch Exception e
-        (warn (.getMessage e))
-        (close-channel uid)))))
+        (warn (.getMessage e))))))
+
+(def user-states (ref nil))
+
+(defn update [uid app-state]
+  (dosync
+   (alter user-states assoc uid app-state)))
+
+(defn on-pose [p])
 
 (defn- event-msg-handler
   [{:keys [ring-req event]} _]
@@ -64,28 +72,30 @@
         uid (:uid session)
         [id data :as ev] event]
 
-    (println "Event:" ev)
-    (match [id data]
-           [:chsk/ws-ping _]
-           :ignore
+    (debug "Event:" ev)
 
-           [:crows/app-state app-state]
-           (if uid
-             (update uid app-state)
-             (println "Received app-state but no uid."))
+    (match
+     [id data]
+     [:chsk/ws-ping _]
+     :ignore
 
-           [:crows/pose p]
-           (on-pose p)
+     [:crows/app-state app-state]
+     (if uid
+       (update uid app-state)
+       (warn "Received app-state but no uid."))
 
-           [:chsk/uidport-open _]
-           (on-open uid)
+     [:crows/pose p]
+     (on-pose p)
 
-           [:chsk/uidport-close _]
-           (on-close uid nil)
+     [:chsk/uidport-open _]
+     (on-open uid)
 
-           :else
-           (or (event-action uid id data)
-               (println "Unmatched event:" ev)))))
+     [:chsk/uidport-close _]
+     (on-close uid nil)
+
+     :else
+     (or (event-action uid id data)
+         (warn "Unmatched event:" ev)))))
 
 (defonce chsk-router
-  (sente/start-chsk-router-loop! #'event-msg-handler ch-chsk))
+  (sente/start-chsk-router-loop! recv #'event-msg-handler))

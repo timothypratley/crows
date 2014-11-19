@@ -24,15 +24,17 @@
   [system]
   {:pre [(not (contains? system :stop))]}
   (info "Server starting")
-  (ticker/start)
-  (assoc system :stop
-    (run-server handler (system :httpkit-config))))
+  (assoc system
+    :stop-httpkit (run-server handler (system :httpkit-config))
+    :stop-connection (connection/start)
+    :stop-ticker (ticker/start)))
 
 (defn stop
   [system]
   {:pre [(contains? system :stop)]}
   (info "Server stopping")
-  ((system :stop) :timeout 500)
+  ((system :stop-httpkit) :timeout 500)
+  ((system :stop-connection))
   (ticker/stop)
   (dissoc system :stop))
 

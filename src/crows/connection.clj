@@ -2,6 +2,7 @@
   (:require
    [clojure.core.match :refer [match]]
    [crows.domain :refer [command domain actions-by-name]]
+   [crows.view :as view]
    [taoensso.sente :as sente]
    [taoensso.timbre :refer [debug info warn]]))
 
@@ -58,16 +59,10 @@
       (catch Exception e
         (warn (.getMessage e))))))
 
-(def user-states (ref nil))
-
-(defn update [uid app-state]
-  (dosync
-   (alter user-states assoc uid app-state)))
-
 (defn on-pose [p])
 
 (defn- event-msg-handler
-  [{:keys [ring-req event]} _]
+  [{:keys [ring-req event]}]
   (let [session (:session ring-req)
         uid (:uid session)
         [id data :as ev] event]
@@ -79,9 +74,13 @@
      [:chsk/ws-ping _]
      :ignore
 
+     [:crows/hello _]
+     (send! uid ) (clear-view uid)
+     (send-view uid)
+
      [:crows/app-state app-state]
      (if uid
-       (update uid app-state)
+       (view/update uid app-state)
        (warn "Received app-state but no uid."))
 
      [:crows/pose p]
@@ -97,5 +96,5 @@
      (or (event-action uid id data)
          (warn "Unmatched event:" ev)))))
 
-(defonce chsk-router
-  (sente/start-chsk-router-loop! recv #'event-msg-handler))
+(defn start []
+  (sente/start-chsk-router! recv #'event-msg-handler))
